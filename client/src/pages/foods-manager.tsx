@@ -237,7 +237,7 @@ export default function FoodsManager() {
     const csv = [
       "Name (English),Kurdish Name,Arabic Name,Brand,Category,Food Type,Servings,Calories,Protein,Carbs,Fat,Fiber,Sugar,Sodium",
       ...dataToExport.map(food => {
-        const servingsText = food.servings?.map(s => `${s.size}${s.unit}${s.description ? ` (${s.description})` : ''}`).join('; ') || '';
+        const servingsText = food.availableUnits?.join(', ') || '';
         const nutrition = food.nutritionPer100 || {
           calories: (food as any).calories || 0,
           protein: (food as any).protein || 0,

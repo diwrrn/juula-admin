@@ -208,70 +208,45 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
               </div>
             </div>
 
-            {/* Serving Options */}
+            {/* Available Units */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-gray-900">Serving Options</h4>
-                <Button type="button" variant="outline" size="sm" onClick={addServing}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Serving
-                </Button>
+                <h4 className="font-medium text-gray-900">Available Units</h4>
+                <p className="text-sm text-gray-500">Which units can this food be measured in?</p>
               </div>
               
-              <div className="space-y-3">
-                {servings.map((serving, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg">
-                    <div className="flex-1 grid grid-cols-3 gap-3">
-                      <div>
-                        <Label>Size</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          value={serving.size}
-                          onChange={(e) => updateServing(index, "size", Number(e.target.value))}
-                          placeholder="1"
-                        />
+              <FormField
+                control={form.control}
+                name="availableUnits"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="grid grid-cols-3 gap-3">
+                        {availableServingUnits.map((unit) => (
+                          <div key={unit.value} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={unit.value}
+                              checked={field.value?.includes(unit.value) || false}
+                              onCheckedChange={(checked) => {
+                                const currentUnits = field.value || [];
+                                if (checked) {
+                                  field.onChange([...currentUnits, unit.value as any]);
+                                } else {
+                                  field.onChange(currentUnits.filter(u => u !== unit.value));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={unit.value} className="text-sm">
+                              {unit.label}
+                            </Label>
+                          </div>
+                        ))}
                       </div>
-                      <div>
-                        <Label>Unit</Label>
-                        <Select 
-                          value={serving.unit} 
-                          onValueChange={(value) => updateServing(index, "unit", value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableUnits.map((unit) => (
-                              <SelectItem key={unit.value} value={unit.value}>
-                                {unit.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Description</Label>
-                        <Input
-                          value={serving.description || ""}
-                          onChange={(e) => updateServing(index, "description", e.target.value)}
-                          placeholder="cooked"
-                        />
-                      </div>
-                    </div>
-                    {servings.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeServing(index)}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             {/* Nutrition Information */}
