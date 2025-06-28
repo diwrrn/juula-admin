@@ -32,6 +32,15 @@ export const foodSchema = z.object({
     sugar: z.number().min(0).optional(),
     sodium: z.number().min(0).optional()
   }),
+  // Custom conversion overrides for variable serving sizes
+  customConversions: z.object({
+    cup: z.number().positive().optional(), // grams/ml per cup
+    plate: z.number().positive().optional(), // grams/ml per plate
+    fist: z.number().positive().optional(), // grams/ml per fist
+    piece: z.number().positive().optional(), // grams/ml per piece
+    tbsp: z.number().positive().optional(), // grams/ml per tablespoon
+    tsp: z.number().positive().optional() // grams/ml per teaspoon
+  }).optional(),
   description: z.string().optional(),
   barcode: z.string().optional(),
   vegetarian: z.boolean().optional(),
@@ -96,7 +105,84 @@ export const allServingUnits = [
   { value: "piece", label: "piece" }
 ];
 
-// Conversion utility function
+// Food-specific conversion tables for better accuracy
+export const foodSpecificConversions: Record<string, { cup: number | null, plate: number | null, piece: number | null }> = {
+  // Grains & Cereals
+  "rice": { cup: 185, plate: 200, piece: null },
+  "pasta": { cup: 220, plate: 180, piece: null },
+  "oatmeal": { cup: 240, plate: 200, piece: null },
+  "quinoa": { cup: 170, plate: 150, piece: null },
+  "bread": { cup: null, plate: null, piece: 25 },
+  
+  // Fruits
+  "apple": { cup: 125, plate: null, piece: 180 },
+  "banana": { cup: 150, plate: null, piece: 120 },
+  "orange": { cup: 180, plate: null, piece: 150 },
+  "grapes": { cup: 150, plate: 200, piece: 5 },
+  "strawberry": { cup: 150, plate: 200, piece: 15 },
+  "blueberry": { cup: 150, plate: 200, piece: 1 },
+  
+  // Vegetables
+  "broccoli": { cup: 90, plate: 150, piece: 25 },
+  "potato": { cup: 150, plate: 200, piece: 200 },
+  "carrot": { cup: 130, plate: 150, piece: 60 },
+  "tomato": { cup: 180, plate: 200, piece: 120 },
+  "onion": { cup: 160, plate: 180, piece: 100 },
+  "cucumber": { cup: 120, plate: 150, piece: 300 },
+  
+  // Proteins
+  "chicken": { cup: null, plate: 200, piece: 150 },
+  "beef": { cup: null, plate: 200, piece: 100 },
+  "fish": { cup: null, plate: 180, piece: 120 },
+  "egg": { cup: null, plate: null, piece: 50 },
+  "tofu": { cup: 250, plate: 200, piece: 85 },
+  
+  // Dairy
+  "cheese": { cup: 115, plate: null, piece: 30 },
+  "yogurt": { cup: 245, plate: null, piece: null },
+  
+  // Nuts & Seeds
+  "almond": { cup: 140, plate: null, piece: 1 },
+  "walnut": { cup: 120, plate: null, piece: 3 },
+  "peanut": { cup: 150, plate: null, piece: 1 }
+};
+
+// Size variants for highly variable items
+export const sizeVariants = {
+  "apple": {
+    "piece_small": 120,
+    "piece_medium": 180,
+    "piece_large": 240
+  },
+  "potato": {
+    "piece_small": 150,
+    "piece_medium": 200,
+    "piece_large": 300
+  },
+  "banana": {
+    "piece_small": 90,
+    "piece_medium": 120,
+    "piece_large": 150
+  },
+  "egg": {
+    "piece_small": 40,
+    "piece_medium": 50,
+    "piece_large": 60
+  }
+};
+
+// Helper function to detect food type from name
+function detectFoodType(foodName: string): string | null {
+  const name = foodName.toLowerCase();
+  for (const [key] of Object.entries(foodSpecificConversions)) {
+    if (name.includes(key)) {
+      return key;
+    }
+  }
+  return null;
+}
+
+// Conversion utility function with food-specific accuracy
 export function calculateNutritionForServing(
   food: Food,
   servingSize: number,
@@ -115,24 +201,37 @@ export function calculateNutritionForServing(
   // Convert serving to grams/ml equivalent
   let gramsOrMl = servingSize;
   
-  // Standard conversions (approximate)
-  const conversions: Record<string, number> = {
+  // Default conversions (fallback)
+  const defaultConversions: Record<string, number> = {
     // Liquid conversions (to ml)
     "l": 1000,
     "ml": 1,
-    "cup": 240, // 1 cup ≈ 240ml
-    "tbsp": 15, // 1 tablespoon ≈ 15ml
-    "tsp": 5,   // 1 teaspoon ≈ 5ml
+    "cup": food.foodType === "liquid" ? 240 : 200, // 240ml for liquids, 200g for solids
+    "tbsp": food.foodType === "liquid" ? 15 : 12,  // 15ml for liquids, 12g for solids
+    "tsp": food.foodType === "liquid" ? 5 : 4,     // 5ml for liquids, 4g for solids
     
-    // Solid conversions (to grams) - these are estimates
+    // Solid conversions (to grams)
     "g": 1,
-    "plate": 200,  // 1 plate ≈ 200g (user configurable)
-    "fist": 80,    // 1 fist ≈ 80g
-    "piece": 50    // 1 piece ≈ 50g (varies by food)
+    "plate": 200,  // default plate size
+    "fist": 80,    // default fist size
+    "piece": 50    // default piece size
   };
   
-  if (conversions[servingUnit]) {
-    gramsOrMl = servingSize * conversions[servingUnit];
+  // Get food-specific conversions
+  const foodType = detectFoodType(food.name);
+  const foodSpecific = foodType ? (foodSpecificConversions[foodType] || {}) : {};
+  
+  // Priority: custom conversions > food-specific > defaults
+  const conversions = {
+    ...defaultConversions,
+    ...foodSpecific,
+    ...(food.customConversions || {})
+  };
+  
+  // Apply conversion if available
+  const conversionValue = conversions[servingUnit as keyof typeof conversions];
+  if (conversionValue !== undefined && conversionValue !== null) {
+    gramsOrMl = servingSize * conversionValue;
   }
   
   // Calculate ratio compared to base amount (100g/100ml)
@@ -148,4 +247,15 @@ export function calculateNutritionForServing(
     sugar: food.nutritionPer100.sugar ? Math.round((food.nutritionPer100.sugar * ratio) * 10) / 10 : undefined,
     sodium: food.nutritionPer100.sodium ? Math.round((food.nutritionPer100.sodium * ratio) * 10) / 10 : undefined
   };
+}
+
+// Helper function to get suggested conversion values for a food
+export function getSuggestedConversions(foodName: string, foodType: "solid" | "liquid") {
+  const detectedType = detectFoodType(foodName);
+  if (detectedType && foodSpecificConversions[detectedType]) {
+    return foodSpecificConversions[detectedType];
+  }
+  
+  // Return null for no suggestions (will use defaults)
+  return null;
 }

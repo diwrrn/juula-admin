@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertFoodSchema, type Food, type InsertFood } from "@shared/schema";
-import { categoryConfig, servingUnitsConfig } from "@shared/schema";
+import { categoryConfig, servingUnitsConfig, getSuggestedConversions } from "@shared/schema";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Plus, Minus } from "lucide-react";
@@ -41,6 +41,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
         sugar: (food as any)?.sugar || 0,
         sodium: (food as any)?.sodium || 0
       },
+      customConversions: food?.customConversions || {},
       description: food?.description || "",
       barcode: food?.barcode || "",
       vegetarian: food?.vegetarian || false,
