@@ -238,7 +238,16 @@ export default function FoodsManager() {
       "Name (English),Kurdish Name,Arabic Name,Brand,Category,Food Type,Servings,Calories,Protein,Carbs,Fat,Fiber,Sugar,Sodium",
       ...dataToExport.map(food => {
         const servingsText = food.servings?.map(s => `${s.size}${s.unit}${s.description ? ` (${s.description})` : ''}`).join('; ') || '';
-        return `"${food.name}","${food.kurdishName || ""}","${food.arabicName || ""}","${food.brand || ""}","${food.category}","${food.foodType}","${servingsText}",${food.calories},${food.protein || 0},${food.carbs || 0},${food.fat || 0},${food.fiber || 0},${food.sugar || 0},${food.sodium || 0}`;
+        const nutrition = food.nutritionPer100 || {
+          calories: (food as any).calories || 0,
+          protein: (food as any).protein || 0,
+          carbs: (food as any).carbs || 0,
+          fat: (food as any).fat || 0,
+          fiber: (food as any).fiber || 0,
+          sugar: (food as any).sugar || 0,
+          sodium: (food as any).sodium || 0
+        };
+        return `"${food.name}","${food.kurdishName || ""}","${food.arabicName || ""}","${food.brand || ""}","${food.category}","${food.foodType}","${servingsText}",${nutrition.calories},${nutrition.protein || 0},${nutrition.carbs || 0},${nutrition.fat || 0},${nutrition.fiber || 0},${nutrition.sugar || 0},${nutrition.sodium || 0}`;
       })
     ].join("\n");
     
@@ -343,11 +352,13 @@ export default function FoodsManager() {
                           { size: 150, unit: "g", description: "cooked" },
                           { size: 1, unit: "plate", description: "medium plate" }
                         ],
-                        calories: 205,
-                        protein: 4.3,
-                        carbs: 45,
-                        fat: 0.4,
-                        fiber: 0.6,
+                        nutritionPer100: {
+                          calories: 205,
+                          protein: 4.3,
+                          carbs: 45,
+                          fat: 0.4,
+                          fiber: 0.6,
+                        },
                         description: "Sample rice with multiple serving options"
                       });
                     }}

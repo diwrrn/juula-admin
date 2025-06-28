@@ -87,7 +87,7 @@ export function FoodsTable({
               Servings
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              <SortButton field="calories">Calories</SortButton>
+              Calories
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Nutrition
@@ -155,13 +155,13 @@ export function FoodsTable({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {food.calories} kcal
+                  {food.nutritionPer100?.calories || (food as any).calories || 0} kcal
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div className="space-y-1">
-                    <div>Protein: <span className="font-medium">{food.protein || 0}g</span></div>
-                    <div>Carbs: <span className="font-medium">{food.carbs || 0}g</span></div>
-                    <div>Fat: <span className="font-medium">{food.fat || 0}g</span></div>
+                    <div>Protein: <span className="font-medium">{food.nutritionPer100?.protein || (food as any).protein || 0}g</span></div>
+                    <div>Carbs: <span className="font-medium">{food.nutritionPer100?.carbs || (food as any).carbs || 0}g</span></div>
+                    <div>Fat: <span className="font-medium">{food.nutritionPer100?.fat || (food as any).fat || 0}g</span></div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
