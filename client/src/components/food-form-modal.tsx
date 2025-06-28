@@ -60,10 +60,15 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
   const foodType = form.watch("foodType");
 
   const handleSubmit = (data: InsertFood) => {
-    // Filter out any undefined values and ensure availableUnits is properly set
+    // Clean all undefined values for Firebase compatibility
+    const cleanCustomConversions = Object.fromEntries(
+      Object.entries(data.customConversions || {}).filter(([_, value]) => value !== undefined && value !== null)
+    );
+    
     const cleanData = {
       ...data,
-      availableUnits: data.availableUnits?.filter(Boolean) || ["g"]
+      availableUnits: data.availableUnits?.filter(Boolean) || ["g"],
+      customConversions: cleanCustomConversions
     };
     onSubmit(cleanData);
   };
