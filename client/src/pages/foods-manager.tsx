@@ -326,13 +326,44 @@ export default function FoodsManager() {
                     </span>
                   </div>
                 </div>
-                <Button 
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="bg-primary hover:bg-blue-700"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New Food
-                </Button>
+                <div className="flex items-center space-x-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      // Add a sample rice item to demonstrate multiple servings
+                      addFoodMutation.mutate({
+                        name: "White Rice",
+                        kurdishName: "برنج سپی",
+                        arabicName: "أرز أبيض",
+                        brand: "Demo",
+                        category: "grains",
+                        foodType: "solid",
+                        servings: [
+                          { size: 1, unit: "cup", description: "cooked" },
+                          { size: 150, unit: "g", description: "cooked" },
+                          { size: 1, unit: "plate", description: "medium plate" }
+                        ],
+                        calories: 205,
+                        protein: 4.3,
+                        carbs: 45,
+                        fat: 0.4,
+                        fiber: 0.6,
+                        description: "Sample rice with multiple serving options"
+                      });
+                    }}
+                    disabled={addFoodMutation.isPending}
+                  >
+                    {addFoodMutation.isPending ? <LoadingSpinner size="sm" className="mr-2" /> : null}
+                    Add Sample Rice
+                  </Button>
+                  <Button 
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="bg-primary hover:bg-blue-700"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Food
+                  </Button>
+                </div>
               </div>
 
               {/* Search and Filters */}
