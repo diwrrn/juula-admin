@@ -235,10 +235,11 @@ export default function FoodsManager() {
       : filteredAndSortedFoods;
     
     const csv = [
-      "Name (English),Kurdish Name,Arabic Name,Brand,Category,Food Type,Serving Size,Serving Unit,Calories,Protein,Carbs,Fat,Fiber,Sugar,Sodium",
-      ...dataToExport.map(food => 
-        `"${food.name}","${food.kurdishName || ""}","${food.arabicName || ""}","${food.brand || ""}","${food.category}","${food.foodType}",${food.servingSize || ""},"${food.servingUnit || ""}",${food.calories},${food.protein || 0},${food.carbs || 0},${food.fat || 0},${food.fiber || 0},${food.sugar || 0},${food.sodium || 0}`
-      )
+      "Name (English),Kurdish Name,Arabic Name,Brand,Category,Food Type,Servings,Calories,Protein,Carbs,Fat,Fiber,Sugar,Sodium",
+      ...dataToExport.map(food => {
+        const servingsText = food.servings?.map(s => `${s.size}${s.unit}${s.description ? ` (${s.description})` : ''}`).join('; ') || '';
+        return `"${food.name}","${food.kurdishName || ""}","${food.arabicName || ""}","${food.brand || ""}","${food.category}","${food.foodType}","${servingsText}",${food.calories},${food.protein || 0},${food.carbs || 0},${food.fat || 0},${food.fiber || 0},${food.sugar || 0},${food.sodium || 0}`;
+      })
     ].join("\n");
     
     const blob = new Blob([csv], { type: "text/csv" });

@@ -17,8 +17,11 @@ export const foodSchema = z.object({
     "condiments"
   ]),
   foodType: z.enum(["solid", "liquid"]),
-  servingSize: z.number().positive().optional(),
-  servingUnit: z.enum(["ml", "l", "g", "cup", "tbsp", "tsp", "plate", "fist", "piece"]).optional(),
+  servings: z.array(z.object({
+    size: z.number().positive(),
+    unit: z.enum(["ml", "l", "g", "cup", "tbsp", "tsp", "plate", "fist", "piece"]),
+    description: z.string().optional()
+  })).optional(),
   calories: z.number().min(0, "Calories must be non-negative"),
   protein: z.number().min(0).optional(),
   carbs: z.number().min(0).optional(),
@@ -76,3 +79,16 @@ export const servingUnitsConfig = {
     { value: "tsp", label: "teaspoon (tsp)" }
   ]
 };
+
+// All available serving units for multi-serving support
+export const allServingUnits = [
+  { value: "ml", label: "milliliters (ml)" },
+  { value: "l", label: "liters (l)" },
+  { value: "g", label: "grams (g)" },
+  { value: "cup", label: "cup" },
+  { value: "tbsp", label: "tablespoon (tbsp)" },
+  { value: "tsp", label: "teaspoon (tsp)" },
+  { value: "plate", label: "plate" },
+  { value: "fist", label: "fist" },
+  { value: "piece", label: "piece" }
+];

@@ -1,6 +1,6 @@
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Food, InsertFood, insertFoodSchema, categoryConfig, servingUnitsConfig } from "@shared/schema";
+import { Food, InsertFood, insertFoodSchema, categoryConfig, allServingUnits } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { X } from "lucide-react";
+import { X, Plus, Minus } from "lucide-react";
 
 interface FoodFormModalProps {
   isOpen: boolean;
@@ -29,8 +29,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       brand: food?.brand || "",
       category: food?.category || "fruits",
       foodType: food?.foodType || "solid",
-      servingSize: food?.servingSize || undefined,
-      servingUnit: food?.servingUnit || "g",
+      servings: food?.servings || [{ size: 100, unit: "g" }],
       calories: food?.calories || 0,
       protein: food?.protein || 0,
       carbs: food?.carbs || 0,
@@ -47,13 +46,14 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
     },
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "servings"
+  });
+
   const handleSubmit = (data: InsertFood) => {
     onSubmit(data);
   };
-
-  // Watch food type to update available serving units
-  const watchedFoodType = form.watch("foodType");
-  const availableServingUnits = servingUnitsConfig[watchedFoodType] || servingUnitsConfig.solid;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -177,51 +177,93 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                   )}
                 />
 
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="servingSize"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Serving Size</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            step="0.1" 
-                            placeholder="0"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="servingUnit"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Unit</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {availableServingUnits.map((unit) => (
-                              <SelectItem key={unit.value} value={unit.value}>
-                                {unit.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Serving Sizes</FormLabel>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => append({ size: 100, unit: "g" })}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Serving
+                    </Button>
+                  </div>
+                  
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="flex items-center space-x-2">
+                      <FormField
+                        control={form.control}
+                        name={`servings.${index}.size`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                placeholder="Size"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name={`servings.${index}.unit`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {allServingUnits.map((unit) => (
+                                  <SelectItem key={unit.value} value={unit.value}>
+                                    {unit.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name={`servings.${index}.description`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Input
+                                placeholder="Description (optional)"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      {fields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => remove(index)}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
