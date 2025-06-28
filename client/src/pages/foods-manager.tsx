@@ -235,9 +235,9 @@ export default function FoodsManager() {
       : filteredAndSortedFoods;
     
     const csv = [
-      "Name,Brand,Category,Calories,Protein,Carbs,Fat,Fiber,Sugar,Sodium",
+      "Name (English),Kurdish Name,Arabic Name,Brand,Category,Food Type,Serving Size,Serving Unit,Calories,Protein,Carbs,Fat,Fiber,Sugar,Sodium",
       ...dataToExport.map(food => 
-        `"${food.name}","${food.brand || ""}","${food.category}",${food.calories},${food.protein || 0},${food.carbs || 0},${food.fat || 0},${food.fiber || 0},${food.sugar || 0},${food.sodium || 0}`
+        `"${food.name}","${food.kurdishName || ""}","${food.arabicName || ""}","${food.brand || ""}","${food.category}","${food.foodType}",${food.servingSize || ""},"${food.servingUnit || ""}",${food.calories},${food.protein || 0},${food.carbs || 0},${food.fat || 0},${food.fiber || 0},${food.sugar || 0},${food.sodium || 0}`
       )
     ].join("\n");
     
@@ -339,7 +339,7 @@ export default function FoodsManager() {
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search foods by name, category, or nutrition info..."
+                    placeholder="Search foods by name (English, Kurdish, Arabic), brand, or description..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"

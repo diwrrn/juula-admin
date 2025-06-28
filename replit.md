@@ -32,7 +32,10 @@ This is a full-stack web application for managing a foods database. The applicat
 
 ### Data Models
 The application uses a comprehensive food schema defined in `shared/schema.ts`:
-- **Food Entity**: Includes nutritional information, categorization, dietary restrictions
+- **Food Entity**: Includes multilingual names (English, Kurdish, Arabic), nutritional information, categorization, dietary restrictions
+- **Multilingual Support**: English name (required), Kurdish name (optional), Arabic name (optional)
+- **Food Type System**: Solid/liquid classification with appropriate serving units
+- **Dynamic Serving Units**: 9 serving types (ml, l, g, cup, tbsp, tsp, plate, fist, piece) filtered based on food type
 - **Categories**: 8 predefined categories (fruits, vegetables, grains, proteins, dairy, beverages, snacks, condiments)
 - **Validation**: Zod schemas for type-safe data validation
 
@@ -93,7 +96,8 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - **Asset Optimization**: Vite handles bundling and optimization
 
 ## Changelog
-- June 28, 2025. Initial setup
+- June 28, 2025: Initial setup with Firebase Firestore integration
+- June 28, 2025: Added multilingual support (English, Kurdish, Arabic names) and smart serving units based on food type (solid/liquid)
 
 ## User Preferences
 
