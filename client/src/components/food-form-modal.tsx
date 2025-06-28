@@ -440,6 +440,134 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                   )}
                 />
               </div>
+
+              {/* Vitamins and Minerals */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-gray-900">Vitamins & Minerals</h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="nutritionPer100.calcium"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Calcium (mg)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="nutritionPer100.potassium"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Potassium (mg)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="nutritionPer100.vitaminB12"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vitamin B12 (μg)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01" 
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="nutritionPer100.vitaminA"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vitamin A (μg)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="nutritionPer100.vitaminE"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vitamin E (mg)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01" 
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="nutritionPer100.vitaminD"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vitamin D (μg)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01" 
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Custom Serving Conversions */}
@@ -559,22 +687,8 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
               </div>
             </div>
 
-            {/* Description and Dietary */}
+            {/* Dietary Information */}
             <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Additional notes about this food item..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-900">Dietary Information</h4>
                 <div className="grid grid-cols-2 gap-4">

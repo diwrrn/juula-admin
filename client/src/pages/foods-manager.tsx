@@ -359,7 +359,7 @@ export default function FoodsManager() {
                           fat: 0.4,
                           fiber: 0.6,
                         },
-                        description: "Sample rice with multiple serving options"
+
                       });
                     }}
                     disabled={addFoodMutation.isPending}
