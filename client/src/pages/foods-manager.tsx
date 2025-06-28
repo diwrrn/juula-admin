@@ -32,7 +32,7 @@ export default function FoodsManager() {
   
   // State management
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingFood, setEditingFood] = useState<Food | null>(null);
   const [deletingFood, setDeletingFood] = useState<Food | null>(null);
@@ -186,7 +186,7 @@ export default function FoodsManager() {
         food.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         food.description?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesCategory = !categoryFilter || food.category === categoryFilter;
+      const matchesCategory = categoryFilter === "all" || food.category === categoryFilter;
       
       return matchesSearch && matchesCategory;
     });
@@ -348,7 +348,7 @@ export default function FoodsManager() {
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
                     {Object.entries(categoryConfig).map(([value, config]) => (
                       <SelectItem key={value} value={value}>
                         {config.label}
