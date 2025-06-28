@@ -45,7 +45,8 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
         vitaminB12: (food as any)?.vitaminB12 || 0,
         vitaminA: (food as any)?.vitaminA || 0,
         vitaminE: (food as any)?.vitaminE || 0,
-        vitaminD: (food as any)?.vitaminD || 0
+        vitaminD: (food as any)?.vitaminD || 0,
+        iron: (food as any)?.iron || 0
       },
       customConversions: food?.customConversions || {},
 
@@ -525,6 +526,26 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                           <Input 
                             type="number" 
                             step="0.01" 
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="nutritionPer100.iron"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Iron (mg)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
                             placeholder="0" 
                             {...field}
                             onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
