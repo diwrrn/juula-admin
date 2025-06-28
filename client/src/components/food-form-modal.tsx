@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,42 +23,52 @@ interface FoodFormModalProps {
 }
 
 export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: FoodFormModalProps) {
-  const form = useForm<InsertFood>({
-    resolver: zodResolver(insertFoodSchema),
-    defaultValues: {
-      name: food?.name || "",
-      kurdishName: food?.kurdishName || "",
-      arabicName: food?.arabicName || "",
-      brand: food?.brand || "",
-      category: food?.category || "fruits",
-      foodType: food?.foodType || "solid",
-      availableUnits: food?.availableUnits || ["g", "cup"],
-      nutritionPer100: food?.nutritionPer100 || {
-        calories: (food as any)?.calories || 0,
-        protein: (food as any)?.protein || 0,
-        carbs: (food as any)?.carbs || 0,
-        fat: (food as any)?.fat || 0,
-        fiber: (food as any)?.fiber || 0,
-        sugar: (food as any)?.sugar || 0,
-        sodium: (food as any)?.sodium || 0,
-        calcium: (food as any)?.calcium || 0,
-        potassium: (food as any)?.potassium || 0,
-        vitaminB12: (food as any)?.vitaminB12 || 0,
-        vitaminA: (food as any)?.vitaminA || 0,
-        vitaminE: (food as any)?.vitaminE || 0,
-        vitaminD: (food as any)?.vitaminD || 0,
-        iron: (food as any)?.iron || 0
-      },
-      customConversions: food?.customConversions || {},
-
-      vegetarian: food?.vegetarian || false,
-      vegan: food?.vegan || false,
-      glutenFree: food?.glutenFree || false,
-      dairyFree: food?.dairyFree || false,
+  const getDefaultValues = () => ({
+    name: food?.name || "",
+    kurdishName: food?.kurdishName || "",
+    arabicName: food?.arabicName || "",
+    brand: food?.brand || "",
+    category: food?.category || "fruits",
+    foodType: food?.foodType || "solid",
+    availableUnits: food?.availableUnits || ["g", "cup"],
+    nutritionPer100: {
+      calories: food?.nutritionPer100?.calories || 0,
+      protein: food?.nutritionPer100?.protein || 0,
+      carbs: food?.nutritionPer100?.carbs || 0,
+      fat: food?.nutritionPer100?.fat || 0,
+      fiber: food?.nutritionPer100?.fiber || 0,
+      sugar: food?.nutritionPer100?.sugar || 0,
+      sodium: food?.nutritionPer100?.sodium || 0,
+      calcium: food?.nutritionPer100?.calcium || 0,
+      potassium: food?.nutritionPer100?.potassium || 0,
+      vitaminB12: food?.nutritionPer100?.vitaminB12 || 0,
+      vitaminA: food?.nutritionPer100?.vitaminA || 0,
+      vitaminE: food?.nutritionPer100?.vitaminE || 0,
+      vitaminD: food?.nutritionPer100?.vitaminD || 0,
+      iron: food?.nutritionPer100?.iron || 0,
     },
+    customConversions: food?.customConversions || {},
+    vegetarian: food?.vegetarian || false,
+    vegan: food?.vegan || false,
+    glutenFree: food?.glutenFree || false,
+    dairyFree: food?.dairyFree || false,
   });
 
+  const form = useForm<InsertFood>({
+    resolver: zodResolver(insertFoodSchema),
+    defaultValues: getDefaultValues(),
+  });
+
+  // Reset form when modal opens with different food
+  useEffect(() => {
+    if (isOpen) {
+      form.reset(getDefaultValues());
+    }
+  }, [isOpen, food?.id]);
+
   const foodType = form.watch("foodType");
+
+
 
   const handleSubmit = (data: InsertFood) => {
     // Clean all undefined values for Firebase compatibility
