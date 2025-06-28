@@ -186,7 +186,7 @@ export default function FoodsManager() {
         food.kurdishName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         food.arabicName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         food.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        food.description?.toLowerCase().includes(searchTerm.toLowerCase());
+        false;
       
       const matchesCategory = categoryFilter === "all" || food.category === categoryFilter;
       

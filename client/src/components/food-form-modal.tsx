@@ -39,10 +39,16 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
         fat: (food as any)?.fat || 0,
         fiber: (food as any)?.fiber || 0,
         sugar: (food as any)?.sugar || 0,
-        sodium: (food as any)?.sodium || 0
+        sodium: (food as any)?.sodium || 0,
+        calcium: (food as any)?.calcium || 0,
+        potassium: (food as any)?.potassium || 0,
+        vitaminB12: (food as any)?.vitaminB12 || 0,
+        vitaminA: (food as any)?.vitaminA || 0,
+        vitaminE: (food as any)?.vitaminE || 0,
+        vitaminD: (food as any)?.vitaminD || 0
       },
       customConversions: food?.customConversions || {},
-      description: food?.description || "",
+
       barcode: food?.barcode || "",
       vegetarian: food?.vegetarian || false,
       vegan: food?.vegan || false,

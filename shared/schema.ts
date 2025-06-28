@@ -30,7 +30,13 @@ export const foodSchema = z.object({
     fat: z.number().min(0).optional(),
     fiber: z.number().min(0).optional(),
     sugar: z.number().min(0).optional(),
-    sodium: z.number().min(0).optional()
+    sodium: z.number().min(0).optional(),
+    calcium: z.number().min(0).optional(),
+    potassium: z.number().min(0).optional(),
+    vitaminB12: z.number().min(0).optional(),
+    vitaminA: z.number().min(0).optional(),
+    vitaminE: z.number().min(0).optional(),
+    vitaminD: z.number().min(0).optional()
   }),
   // Custom conversion overrides for variable serving sizes
   customConversions: z.object({
@@ -41,7 +47,6 @@ export const foodSchema = z.object({
     tbsp: z.number().positive().optional(), // grams/ml per tablespoon
     tsp: z.number().positive().optional() // grams/ml per teaspoon
   }).optional(),
-  description: z.string().optional(),
   barcode: z.string().optional(),
   vegetarian: z.boolean().optional(),
   vegan: z.boolean().optional(),
