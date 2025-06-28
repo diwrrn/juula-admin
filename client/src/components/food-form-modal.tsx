@@ -436,6 +436,123 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
               </div>
             </div>
 
+            {/* Custom Serving Conversions */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-gray-900">Custom Serving Conversions</h4>
+                <p className="text-sm text-gray-500">Override default weights for more accuracy</p>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 mb-3">
+                  Set custom weights for this specific food. Leave blank to use smart defaults.
+                </p>
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="customConversions.cup"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>1 cup = ? {foodType === "solid" ? "grams" : "ml"}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="Auto"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="customConversions.plate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>1 plate = ? {foodType === "solid" ? "grams" : "ml"}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="Auto"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="customConversions.piece"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>1 piece = ? {foodType === "solid" ? "grams" : "ml"}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="Auto"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <FormField
+                    control={form.control}
+                    name="customConversions.fist"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>1 fist = ? {foodType === "solid" ? "grams" : "ml"}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="Auto"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="customConversions.tbsp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>1 tbsp = ? {foodType === "solid" ? "grams" : "ml"}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="Auto"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Description and Dietary */}
             <div className="space-y-4">
               <FormField
