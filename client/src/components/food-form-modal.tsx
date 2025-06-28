@@ -60,7 +60,12 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
   const foodType = form.watch("foodType");
 
   const handleSubmit = (data: InsertFood) => {
-    onSubmit(data);
+    // Filter out any undefined values and ensure availableUnits is properly set
+    const cleanData = {
+      ...data,
+      availableUnits: data.availableUnits?.filter(Boolean) || ["g"]
+    };
+    onSubmit(cleanData);
   };
 
   // Available serving units based on food type
@@ -226,7 +231,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                           <div key={unit.value} className="flex items-center space-x-2">
                             <Checkbox
                               id={unit.value}
-                              checked={field.value?.includes(unit.value) || false}
+                              checked={field.value?.includes(unit.value as any) || false}
                               onCheckedChange={(checked) => {
                                 const currentUnits = field.value || [];
                                 if (checked) {
