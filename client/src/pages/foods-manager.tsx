@@ -183,6 +183,8 @@ export default function FoodsManager() {
   const filteredAndSortedFoods = useMemo(() => {
     let filtered = foods.filter(food => {
       const matchesSearch = food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        food.kurdishName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        food.arabicName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         food.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         food.description?.toLowerCase().includes(searchTerm.toLowerCase());
       

@@ -3,6 +3,8 @@ import { z } from "zod";
 export const foodSchema = z.object({
   id: z.string(),
   name: z.string().min(1, "Food name is required"),
+  kurdishName: z.string().optional(),
+  arabicName: z.string().optional(),
   brand: z.string().optional(),
   category: z.enum([
     "fruits",
@@ -14,8 +16,9 @@ export const foodSchema = z.object({
     "snacks",
     "condiments"
   ]),
+  foodType: z.enum(["solid", "liquid"]),
   servingSize: z.number().positive().optional(),
-  servingUnit: z.enum(["g", "ml", "cup", "piece", "slice"]).optional(),
+  servingUnit: z.enum(["ml", "l", "g", "cup", "tbsp", "tsp", "plate", "fist", "piece"]).optional(),
   calories: z.number().min(0, "Calories must be non-negative"),
   protein: z.number().min(0).optional(),
   carbs: z.number().min(0).optional(),
@@ -52,4 +55,24 @@ export const categoryConfig = {
   beverages: { label: "Beverages", color: "bg-cyan-100 text-cyan-800" },
   snacks: { label: "Snacks", color: "bg-orange-100 text-orange-800" },
   condiments: { label: "Condiments", color: "bg-gray-100 text-gray-800" },
+};
+
+// Serving units configuration based on food type
+export const servingUnitsConfig = {
+  solid: [
+    { value: "g", label: "grams (g)" },
+    { value: "cup", label: "cup" },
+    { value: "tbsp", label: "tablespoon (tbsp)" },
+    { value: "tsp", label: "teaspoon (tsp)" },
+    { value: "plate", label: "plate" },
+    { value: "fist", label: "fist" },
+    { value: "piece", label: "piece" }
+  ],
+  liquid: [
+    { value: "ml", label: "milliliters (ml)" },
+    { value: "l", label: "liters (l)" },
+    { value: "cup", label: "cup" },
+    { value: "tbsp", label: "tablespoon (tbsp)" },
+    { value: "tsp", label: "teaspoon (tsp)" }
+  ]
 };

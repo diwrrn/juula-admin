@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Food, InsertFood, insertFoodSchema, categoryConfig } from "@shared/schema";
+import { Food, InsertFood, insertFoodSchema, categoryConfig, servingUnitsConfig } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -24,8 +24,11 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
     resolver: zodResolver(insertFoodSchema),
     defaultValues: {
       name: food?.name || "",
+      kurdishName: food?.kurdishName || "",
+      arabicName: food?.arabicName || "",
       brand: food?.brand || "",
       category: food?.category || "fruits",
+      foodType: food?.foodType || "solid",
       servingSize: food?.servingSize || undefined,
       servingUnit: food?.servingUnit || "g",
       calories: food?.calories || 0,
@@ -47,6 +50,10 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
   const handleSubmit = (data: InsertFood) => {
     onSubmit(data);
   };
+
+  // Watch food type to update available serving units
+  const watchedFoodType = form.watch("foodType");
+  const availableServingUnits = servingUnitsConfig[watchedFoodType] || servingUnitsConfig.solid;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -72,9 +79,37 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Food Name *</FormLabel>
+                      <FormLabel>Food Name (English) *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter food name" {...field} />
+                        <Input placeholder="Enter food name in English" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="kurdishName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kurdish Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="ناوی خۆراکە بە کوردی" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="arabicName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Arabic Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="اسم الطعام بالعربية" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -120,6 +155,28 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="foodType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Food Type *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select food type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="solid">Solid Food</SelectItem>
+                          <SelectItem value="liquid">Liquid Food</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <div className="grid grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
@@ -154,11 +211,11 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="g">grams</SelectItem>
-                            <SelectItem value="ml">ml</SelectItem>
-                            <SelectItem value="cup">cup</SelectItem>
-                            <SelectItem value="piece">piece</SelectItem>
-                            <SelectItem value="slice">slice</SelectItem>
+                            {availableServingUnits.map((unit) => (
+                              <SelectItem key={unit.value} value={unit.value}>
+                                {unit.label}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />

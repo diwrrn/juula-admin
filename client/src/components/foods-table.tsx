@@ -120,6 +120,12 @@ export function FoodsTable({
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-900">{food.name}</div>
+                      {food.kurdishName && (
+                        <div className="text-sm text-gray-600 font-medium">{food.kurdishName}</div>
+                      )}
+                      {food.arabicName && (
+                        <div className="text-sm text-gray-600 font-medium">{food.arabicName}</div>
+                      )}
                       {food.brand && (
                         <div className="text-sm text-gray-500">{food.brand}</div>
                       )}
