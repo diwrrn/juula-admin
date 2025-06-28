@@ -50,7 +50,6 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       },
       customConversions: food?.customConversions || {},
 
-      barcode: food?.barcode || "",
       vegetarian: food?.vegetarian || false,
       vegan: food?.vegan || false,
       glutenFree: food?.glutenFree || false,
@@ -154,19 +153,6 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="barcode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Barcode</FormLabel>
-                      <FormControl>
-                        <Input placeholder="1234567890123" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

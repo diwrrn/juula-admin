@@ -44,7 +44,6 @@ export const foodSchema = z.object({
     tbsp: z.number().positive().optional(), // grams/ml per tablespoon
     tsp: z.number().positive().optional() // grams/ml per teaspoon
   }).optional(),
-  barcode: z.string().optional(),
   vegetarian: z.boolean().optional(),
   vegan: z.boolean().optional(),
   glutenFree: z.boolean().optional(),
