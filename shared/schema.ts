@@ -20,7 +20,10 @@ export const foodSchema = z.object({
   servings: z.array(z.object({
     size: z.number().positive(),
     unit: z.enum(["ml", "l", "g", "cup", "tbsp", "tsp", "plate", "fist", "piece"]),
-    description: z.string().optional(),
+    description: z.string().optional()
+  })).optional(),
+  // Nutrition facts per 100g (solid) or 100ml (liquid)
+  nutritionPer100: z.object({
     calories: z.number().min(0, "Calories must be non-negative"),
     protein: z.number().min(0).optional(),
     carbs: z.number().min(0).optional(),
@@ -28,7 +31,7 @@ export const foodSchema = z.object({
     fiber: z.number().min(0).optional(),
     sugar: z.number().min(0).optional(),
     sodium: z.number().min(0).optional()
-  })).optional(),
+  }),
   description: z.string().optional(),
   barcode: z.string().optional(),
   vegetarian: z.boolean().optional(),
@@ -92,3 +95,57 @@ export const allServingUnits = [
   { value: "fist", label: "fist" },
   { value: "piece", label: "piece" }
 ];
+
+// Conversion utility function
+export function calculateNutritionForServing(
+  food: Food,
+  servingSize: number,
+  servingUnit: string
+): {
+  calories: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fiber?: number;
+  sugar?: number;
+  sodium?: number;
+} {
+  const baseAmount = food.foodType === "solid" ? 100 : 100; // 100g or 100ml
+  
+  // Convert serving to grams/ml equivalent
+  let gramsOrMl = servingSize;
+  
+  // Standard conversions (approximate)
+  const conversions: Record<string, number> = {
+    // Liquid conversions (to ml)
+    "l": 1000,
+    "ml": 1,
+    "cup": 240, // 1 cup ≈ 240ml
+    "tbsp": 15, // 1 tablespoon ≈ 15ml
+    "tsp": 5,   // 1 teaspoon ≈ 5ml
+    
+    // Solid conversions (to grams) - these are estimates
+    "g": 1,
+    "plate": 200,  // 1 plate ≈ 200g (user configurable)
+    "fist": 80,    // 1 fist ≈ 80g
+    "piece": 50    // 1 piece ≈ 50g (varies by food)
+  };
+  
+  if (conversions[servingUnit]) {
+    gramsOrMl = servingSize * conversions[servingUnit];
+  }
+  
+  // Calculate ratio compared to base amount (100g/100ml)
+  const ratio = gramsOrMl / baseAmount;
+  
+  // Apply ratio to all nutrition values
+  return {
+    calories: Math.round(food.nutritionPer100.calories * ratio),
+    protein: food.nutritionPer100.protein ? Math.round((food.nutritionPer100.protein * ratio) * 10) / 10 : undefined,
+    carbs: food.nutritionPer100.carbs ? Math.round((food.nutritionPer100.carbs * ratio) * 10) / 10 : undefined,
+    fat: food.nutritionPer100.fat ? Math.round((food.nutritionPer100.fat * ratio) * 10) / 10 : undefined,
+    fiber: food.nutritionPer100.fiber ? Math.round((food.nutritionPer100.fiber * ratio) * 10) / 10 : undefined,
+    sugar: food.nutritionPer100.sugar ? Math.round((food.nutritionPer100.sugar * ratio) * 10) / 10 : undefined,
+    sodium: food.nutritionPer100.sodium ? Math.round((food.nutritionPer100.sodium * ratio) * 10) / 10 : undefined
+  };
+}
