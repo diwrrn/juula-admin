@@ -33,13 +33,13 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       foodType: food?.foodType || "solid",
       servings: food?.servings || [{ size: 100, unit: "g" }],
       nutritionPer100: food?.nutritionPer100 || {
-        calories: 0,
-        protein: 0,
-        carbs: 0,
-        fat: 0,
-        fiber: 0,
-        sugar: 0,
-        sodium: 0
+        calories: (food as any)?.calories || 0,
+        protein: (food as any)?.protein || 0,
+        carbs: (food as any)?.carbs || 0,
+        fat: (food as any)?.fat || 0,
+        fiber: (food as any)?.fiber || 0,
+        sugar: (food as any)?.sugar || 0,
+        sodium: (food as any)?.sodium || 0
       },
       description: food?.description || "",
       barcode: food?.barcode || "",
