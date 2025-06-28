@@ -17,11 +17,7 @@ export const foodSchema = z.object({
     "condiments"
   ]),
   foodType: z.enum(["solid", "liquid"]),
-  servings: z.array(z.object({
-    size: z.number().positive(),
-    unit: z.enum(["ml", "l", "g", "cup", "tbsp", "tsp", "plate", "fist", "piece"]),
-    description: z.string().optional()
-  })).optional(),
+  availableUnits: z.array(z.enum(["ml", "l", "g", "cup", "tbsp", "tsp", "plate", "fist", "piece"])).optional(),
   // Nutrition facts per 100g (solid) or 100ml (liquid)
   nutritionPer100: z.object({
     calories: z.number().min(0, "Calories must be non-negative"),

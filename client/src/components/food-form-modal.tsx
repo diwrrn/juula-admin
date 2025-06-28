@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertFoodSchema, type Food, type InsertFood } from "@shared/schema";
-import { categoryConfig, servingUnitsConfig, getSuggestedConversions } from "@shared/schema";
+import { categoryConfig, allServingUnits, getSuggestedConversions } from "@shared/schema";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Plus, Minus } from "lucide-react";
@@ -31,7 +31,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       brand: food?.brand || "",
       category: food?.category || "fruits",
       foodType: food?.foodType || "solid",
-      servings: food?.servings || [{ size: 100, unit: "g" }],
+      availableUnits: food?.availableUnits || ["g", "cup"],
       nutritionPer100: food?.nutritionPer100 || {
         calories: (food as any)?.calories || 0,
         protein: (food as any)?.protein || 0,
@@ -58,35 +58,18 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
   });
 
   const foodType = form.watch("foodType");
-  const servings = form.watch("servings") || [];
 
   const handleSubmit = (data: InsertFood) => {
     onSubmit(data);
   };
 
-  const availableUnits = foodType === "solid" 
-    ? servingUnitsConfig.solid 
-    : servingUnitsConfig.liquid;
-
-  const addServing = () => {
-    const currentServings = form.getValues("servings") || [];
-    const defaultUnit = foodType === "solid" ? "g" : "ml";
-    form.setValue("servings", [...currentServings, { size: 1, unit: defaultUnit }]);
-  };
-
-  const removeServing = (index: number) => {
-    const currentServings = form.getValues("servings") || [];
-    if (currentServings.length > 1) {
-      form.setValue("servings", currentServings.filter((_, i) => i !== index));
+  // Available serving units based on food type
+  const availableServingUnits = allServingUnits.filter(unit => {
+    if (foodType === "liquid") {
+      return !["plate", "fist", "piece"].includes(unit.value);
     }
-  };
-
-  const updateServing = (index: number, field: "size" | "unit" | "description", value: any) => {
-    const currentServings = form.getValues("servings") || [];
-    const updatedServings = [...currentServings];
-    updatedServings[index] = { ...updatedServings[index], [field]: value };
-    form.setValue("servings", updatedServings);
-  };
+    return !["ml", "l"].includes(unit.value);
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

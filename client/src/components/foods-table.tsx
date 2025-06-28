@@ -142,15 +142,12 @@ export function FoodsTable({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div className="space-y-1">
-                    {food.servings && food.servings.length > 0 ? (
-                      food.servings.map((serving, index) => (
-                        <div key={index} className="text-xs">
-                          {serving.size}{serving.unit}
-                          {serving.description && <span className="text-gray-400 ml-1">({serving.description})</span>}
-                        </div>
-                      ))
+                    {food.availableUnits && food.availableUnits.length > 0 ? (
+                      <div className="text-xs">
+                        {food.availableUnits.join(", ")}
+                      </div>
                     ) : (
-                      <div className="text-xs text-gray-400">No servings defined</div>
+                      <div className="text-xs text-gray-400">No units defined</div>
                     )}
                   </div>
                 </td>

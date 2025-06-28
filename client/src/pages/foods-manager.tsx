@@ -347,11 +347,7 @@ export default function FoodsManager() {
                         brand: "Demo",
                         category: "grains",
                         foodType: "solid",
-                        servings: [
-                          { size: 1, unit: "cup", description: "cooked" },
-                          { size: 150, unit: "g", description: "cooked" },
-                          { size: 1, unit: "plate", description: "medium plate" }
-                        ],
+                        availableUnits: ["cup", "g", "plate"],
                         nutritionPer100: {
                           calories: 205,
                           protein: 4.3,
