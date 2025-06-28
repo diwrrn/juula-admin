@@ -103,7 +103,7 @@ export function FoodsTable({
         <tbody className="bg-white divide-y divide-gray-200">
           {foods.length === 0 ? (
             <tr>
-              <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+              <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                 No food items found. Add your first food item to get started.
               </td>
             </tr>
@@ -139,6 +139,20 @@ export function FoodsTable({
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${categoryConfig[food.category]?.color || "bg-gray-100 text-gray-800"}`}>
                     {categoryConfig[food.category]?.label || food.category}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <div className="space-y-1">
+                    {food.servings && food.servings.length > 0 ? (
+                      food.servings.map((serving, index) => (
+                        <div key={index} className="text-xs">
+                          {serving.size}{serving.unit}
+                          {serving.description && <span className="text-gray-400 ml-1">({serving.description})</span>}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs text-gray-400">No servings defined</div>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {food.calories} kcal
