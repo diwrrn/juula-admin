@@ -20,15 +20,15 @@ export const foodSchema = z.object({
   servings: z.array(z.object({
     size: z.number().positive(),
     unit: z.enum(["ml", "l", "g", "cup", "tbsp", "tsp", "plate", "fist", "piece"]),
-    description: z.string().optional()
+    description: z.string().optional(),
+    calories: z.number().min(0, "Calories must be non-negative"),
+    protein: z.number().min(0).optional(),
+    carbs: z.number().min(0).optional(),
+    fat: z.number().min(0).optional(),
+    fiber: z.number().min(0).optional(),
+    sugar: z.number().min(0).optional(),
+    sodium: z.number().min(0).optional()
   })).optional(),
-  calories: z.number().min(0, "Calories must be non-negative"),
-  protein: z.number().min(0).optional(),
-  carbs: z.number().min(0).optional(),
-  fat: z.number().min(0).optional(),
-  fiber: z.number().min(0).optional(),
-  sugar: z.number().min(0).optional(),
-  sodium: z.number().min(0).optional(),
   description: z.string().optional(),
   barcode: z.string().optional(),
   vegetarian: z.boolean().optional(),
