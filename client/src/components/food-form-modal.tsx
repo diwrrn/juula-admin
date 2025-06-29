@@ -610,40 +610,21 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                       <FormItem>
                         <FormLabel>1 cup = ? {foodType === "solid" ? "grams" : "ml"}</FormLabel>
                         <FormControl>
-                          <div className="flex gap-1">
-                            <Input 
-                              type="number" 
-                              step="0.1" 
-                              placeholder="Auto"
-                              value={field.value === undefined || field.value === null ? "" : String(field.value)}
-                              onChange={(e) => {
-                                const value = e.target.value.trim();
-                                if (value === "") {
-                                  field.onChange(undefined);
-                                } else {
-                                  const numValue = parseFloat(value);
-                                  field.onChange(isNaN(numValue) ? undefined : numValue);
-                                }
-                              }}
-                            />
-                            {(field.value !== undefined && field.value !== null) && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  // Use form's reset to clear this specific field
-                                  const currentValues = form.getValues();
-                                  const updatedConversions = { ...currentValues.customConversions };
-                                  delete updatedConversions.cup;
-                                  form.setValue("customConversions", updatedConversions, { shouldValidate: false });
-                                }}
-                                className="px-2 shrink-0"
-                              >
-                                ×
-                              </Button>
-                            )}
-                          </div>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="Auto"
+                            value={field.value === undefined || field.value === null ? "" : String(field.value)}
+                            onChange={(e) => {
+                              const value = e.target.value.trim();
+                              if (value === "") {
+                                field.onChange(undefined);
+                              } else {
+                                const numValue = parseFloat(value);
+                                field.onChange(isNaN(numValue) ? undefined : numValue);
+                              }
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
