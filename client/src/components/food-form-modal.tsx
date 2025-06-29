@@ -92,7 +92,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
     
     const cleanData = {
       ...data,
-      availableUnits: (data.availableUnits?.filter(Boolean) || [...defaultUnits]) as ("ml" | "l" | "g" | "cup" | "tbsp" | "tsp" | "plate" | "fist" | "piece")[],
+      availableUnits: data.availableUnits?.filter(Boolean) || [...defaultUnits] as ("ml" | "l" | "g" | "cup" | "tbsp" | "tsp" | "plate" | "fist" | "piece")[],
       customConversions: cleanCustomConversions
     };
     onSubmit(cleanData);
