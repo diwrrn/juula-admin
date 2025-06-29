@@ -609,21 +609,34 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                       <FormItem>
                         <FormLabel>1 cup = ? {foodType === "solid" ? "grams" : "ml"}</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            step="0.1" 
-                            placeholder="Auto"
-                            value={field.value === undefined ? "" : field.value}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (value === "") {
-                                field.onChange(undefined);
-                              } else {
-                                const numValue = Number(value);
-                                field.onChange(isNaN(numValue) ? undefined : numValue);
-                              }
-                            }}
-                          />
+                          <div className="flex gap-1">
+                            <Input 
+                              type="number" 
+                              step="0.1" 
+                              placeholder="Auto"
+                              value={field.value === undefined || field.value === null ? "" : String(field.value)}
+                              onChange={(e) => {
+                                const value = e.target.value.trim();
+                                if (value === "") {
+                                  field.onChange(undefined);
+                                } else {
+                                  const numValue = parseFloat(value);
+                                  field.onChange(isNaN(numValue) ? undefined : numValue);
+                                }
+                              }}
+                            />
+                            {(field.value !== undefined && field.value !== null) && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => field.onChange(undefined)}
+                                className="px-2 shrink-0"
+                              >
+                                ×
+                              </Button>
+                            )}
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
