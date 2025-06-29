@@ -631,7 +631,12 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => field.onChange(undefined)}
+                                onClick={() => {
+                                  field.onChange(undefined);
+                                  // Also clear the input value directly
+                                  const input = document.querySelector(`input[name="customConversions.cup"]`) as HTMLInputElement;
+                                  if (input) input.value = "";
+                                }}
                                 className="px-2 shrink-0"
                               >
                                 ×
