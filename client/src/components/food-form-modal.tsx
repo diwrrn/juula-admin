@@ -23,38 +23,45 @@ interface FoodFormModalProps {
 }
 
 export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: FoodFormModalProps) {
-  const getDefaultValues = () => ({
-    name: food?.name || "",
-    kurdishName: food?.kurdishName || "",
-    arabicName: food?.arabicName || "",
-    brand: food?.brand || "",
-    category: food?.category || "fruits",
-    foodType: food?.foodType || "solid",
-    availableUnits: food?.availableUnits || ["g", "cup"],
-    nutritionPer100: {
-      calories: food?.nutritionPer100?.calories || 0,
-      protein: food?.nutritionPer100?.protein || 0,
-      carbs: food?.nutritionPer100?.carbs || 0,
-      fat: food?.nutritionPer100?.fat || 0,
-      fiber: food?.nutritionPer100?.fiber || 0,
-      sugar: food?.nutritionPer100?.sugar || 0,
-      sodium: food?.nutritionPer100?.sodium || 0,
-      calcium: food?.nutritionPer100?.calcium || 0,
-      potassium: food?.nutritionPer100?.potassium || 0,
-      vitaminB12: food?.nutritionPer100?.vitaminB12 || 0,
-      vitaminA: food?.nutritionPer100?.vitaminA || 0,
-      vitaminE: food?.nutritionPer100?.vitaminE || 0,
-      vitaminD: food?.nutritionPer100?.vitaminD || 0,
-      iron: food?.nutritionPer100?.iron || 0,
-      magnesium: food?.nutritionPer100?.magnesium || 0,
-    },
-    customConversions: food?.customConversions || {},
-    vegetarian: food?.vegetarian || false,
-    vegan: food?.vegan || false,
-    glutenFree: food?.glutenFree || false,
-    dairyFree: food?.dairyFree || false,
-    mealTiming: food?.mealTiming || [],
-  });
+  const getDefaultValues = () => {
+    const defaultFoodType = food?.foodType || "solid";
+    const defaultUnits = defaultFoodType === "liquid" 
+      ? ["ml", "l", "cup", "tbsp", "tsp"] as const
+      : ["g", "cup", "tbsp", "tsp", "plate", "fist", "piece"] as const;
+    
+    return {
+      name: food?.name || "",
+      kurdishName: food?.kurdishName || "",
+      arabicName: food?.arabicName || "",
+      brand: food?.brand || "",
+      category: food?.category || "fruits",
+      foodType: defaultFoodType,
+      availableUnits: food?.availableUnits || [...defaultUnits],
+      nutritionPer100: {
+        calories: food?.nutritionPer100?.calories || 0,
+        protein: food?.nutritionPer100?.protein || 0,
+        carbs: food?.nutritionPer100?.carbs || 0,
+        fat: food?.nutritionPer100?.fat || 0,
+        fiber: food?.nutritionPer100?.fiber || 0,
+        sugar: food?.nutritionPer100?.sugar || 0,
+        sodium: food?.nutritionPer100?.sodium || 0,
+        calcium: food?.nutritionPer100?.calcium || 0,
+        potassium: food?.nutritionPer100?.potassium || 0,
+        vitaminB12: food?.nutritionPer100?.vitaminB12 || 0,
+        vitaminA: food?.nutritionPer100?.vitaminA || 0,
+        vitaminE: food?.nutritionPer100?.vitaminE || 0,
+        vitaminD: food?.nutritionPer100?.vitaminD || 0,
+        iron: food?.nutritionPer100?.iron || 0,
+        magnesium: food?.nutritionPer100?.magnesium || 0,
+      },
+      customConversions: food?.customConversions || {},
+      vegetarian: food?.vegetarian || false,
+      vegan: food?.vegan || false,
+      glutenFree: food?.glutenFree || false,
+      dairyFree: food?.dairyFree || false,
+      mealTiming: food?.mealTiming || [],
+    };
+  };
 
   const form = useForm<InsertFood>({
     resolver: zodResolver(insertFoodSchema),
@@ -78,9 +85,14 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       Object.entries(data.customConversions || {}).filter(([_, value]) => value !== undefined && value !== null)
     );
     
+    // Set appropriate default units based on food type
+    const defaultUnits = data.foodType === "liquid" 
+      ? ["ml", "l", "cup", "tbsp", "tsp"] as const
+      : ["g", "cup", "tbsp", "tsp", "plate", "fist", "piece"] as const;
+    
     const cleanData = {
       ...data,
-      availableUnits: data.availableUnits?.filter(Boolean) || ["g"],
+      availableUnits: (data.availableUnits?.filter(Boolean) || [...defaultUnits]) as ("ml" | "l" | "g" | "cup" | "tbsp" | "tsp" | "plate" | "fist" | "piece")[],
       customConversions: cleanCustomConversions
     };
     onSubmit(cleanData);
