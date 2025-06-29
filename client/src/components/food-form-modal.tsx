@@ -67,6 +67,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
   const form = useForm<InsertFood>({
     resolver: zodResolver(insertFoodSchema),
     defaultValues: getDefaultValues(),
+    mode: "onChange"
   });
 
   // Reset form when modal opens with different food
@@ -632,10 +633,11 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                  field.onChange(undefined);
-                                  // Also clear the input value directly
-                                  const input = document.querySelector(`input[name="customConversions.cup"]`) as HTMLInputElement;
-                                  if (input) input.value = "";
+                                  // Clear the form field completely
+                                  form.setValue("customConversions.cup", undefined, { shouldValidate: false });
+                                  form.clearErrors("customConversions.cup");
+                                  // Force re-render
+                                  form.trigger("customConversions.cup");
                                 }}
                                 className="px-2 shrink-0"
                               >
