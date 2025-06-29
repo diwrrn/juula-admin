@@ -101,6 +101,7 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - June 28, 2025: Added 8 new nutrients (calcium, potassium, vitamin B12, A, E, D, iron, magnesium) and removed description field
 - June 28, 2025: Simplified serving system - removed size field, now stores only available units for apps to use
 - June 29, 2025: Added meal timing feature - users can select multiple meal times (morning, lunch, dinner) for each food
+- June 29, 2025: Added magnesium to nutrition tracking (9th vitamin/mineral) and teaspoon (tsp) to custom serving conversions
 
 ## User Preferences
 

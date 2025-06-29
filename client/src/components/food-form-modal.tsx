@@ -65,7 +65,6 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
   };
 
   const form = useForm<InsertFood>({
-    resolver: zodResolver(insertFoodSchema),
     defaultValues: getDefaultValues(),
     mode: "onChange"
   });
