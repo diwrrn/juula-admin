@@ -613,8 +613,8 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             type="number" 
                             step="0.1" 
                             placeholder="Auto"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                            value={field.value === undefined ? "" : field.value}
+                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -633,8 +633,8 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             type="number" 
                             step="0.1" 
                             placeholder="Auto"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                            value={field.value === undefined ? "" : field.value}
+                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -653,8 +653,8 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             type="number" 
                             step="0.1" 
                             placeholder="Auto"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                            value={field.value === undefined ? "" : field.value}
+                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -675,8 +675,8 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             type="number" 
                             step="0.1" 
                             placeholder="Auto"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                            value={field.value === undefined ? "" : field.value}
+                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -695,8 +695,8 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             type="number" 
                             step="0.1" 
                             placeholder="Auto"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                            value={field.value === undefined ? "" : field.value}
+                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -717,8 +717,8 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             type="number" 
                             step="0.1" 
                             placeholder="Auto"
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                            value={field.value === undefined ? "" : field.value}
+                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
                           />
                         </FormControl>
                         <FormMessage />
