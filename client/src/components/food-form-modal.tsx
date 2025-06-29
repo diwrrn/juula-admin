@@ -614,7 +614,15 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             step="0.1" 
                             placeholder="Auto"
                             value={field.value === undefined ? "" : field.value}
-                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === "") {
+                                field.onChange(undefined);
+                              } else {
+                                const numValue = Number(value);
+                                field.onChange(isNaN(numValue) ? undefined : numValue);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -634,7 +642,15 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             step="0.1" 
                             placeholder="Auto"
                             value={field.value === undefined ? "" : field.value}
-                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === "") {
+                                field.onChange(undefined);
+                              } else {
+                                const numValue = Number(value);
+                                field.onChange(isNaN(numValue) ? undefined : numValue);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -654,7 +670,15 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             step="0.1" 
                             placeholder="Auto"
                             value={field.value === undefined ? "" : field.value}
-                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === "") {
+                                field.onChange(undefined);
+                              } else {
+                                const numValue = Number(value);
+                                field.onChange(isNaN(numValue) ? undefined : numValue);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -676,7 +700,15 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             step="0.1" 
                             placeholder="Auto"
                             value={field.value === undefined ? "" : field.value}
-                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === "") {
+                                field.onChange(undefined);
+                              } else {
+                                const numValue = Number(value);
+                                field.onChange(isNaN(numValue) ? undefined : numValue);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -696,7 +728,15 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             step="0.1" 
                             placeholder="Auto"
                             value={field.value === undefined ? "" : field.value}
-                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === "") {
+                                field.onChange(undefined);
+                              } else {
+                                const numValue = Number(value);
+                                field.onChange(isNaN(numValue) ? undefined : numValue);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -718,7 +758,15 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                             step="0.1" 
                             placeholder="Auto"
                             value={field.value === undefined ? "" : field.value}
-                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === "") {
+                                field.onChange(undefined);
+                              } else {
+                                const numValue = Number(value);
+                                field.onChange(isNaN(numValue) ? undefined : numValue);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
