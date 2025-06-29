@@ -33,7 +33,8 @@ export const foodSchema = z.object({
     vitaminA: z.number().min(0).optional(),
     vitaminE: z.number().min(0).optional(),
     vitaminD: z.number().min(0).optional(),
-    iron: z.number().min(0).optional()
+    iron: z.number().min(0).optional(),
+    magnesium: z.number().min(0).optional()
   }),
   // Custom conversion overrides for variable serving sizes
   customConversions: z.object({

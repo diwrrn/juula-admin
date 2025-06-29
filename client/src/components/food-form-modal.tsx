@@ -46,6 +46,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       vitaminE: food?.nutritionPer100?.vitaminE || 0,
       vitaminD: food?.nutritionPer100?.vitaminD || 0,
       iron: food?.nutritionPer100?.iron || 0,
+      magnesium: food?.nutritionPer100?.magnesium || 0,
     },
     customConversions: food?.customConversions || {},
     vegetarian: food?.vegetarian || false,
@@ -553,6 +554,26 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="nutritionPer100.magnesium"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Magnesium (mg)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
             </div>
@@ -657,6 +678,28 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>1 tbsp = ? {foodType === "solid" ? "grams" : "ml"}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="Auto"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 mt-4">
+                  <FormField
+                    control={form.control}
+                    name="customConversions.tsp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>1 tsp = ? {foodType === "solid" ? "grams" : "ml"}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
