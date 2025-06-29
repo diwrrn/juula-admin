@@ -48,6 +48,7 @@ export const foodSchema = z.object({
   vegan: z.boolean().optional(),
   glutenFree: z.boolean().optional(),
   dairyFree: z.boolean().optional(),
+  mealTiming: z.array(z.enum(["morning", "lunch", "dinner"])).optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -104,6 +105,13 @@ export const allServingUnits = [
   { value: "plate", label: "plate" },
   { value: "fist", label: "fist" },
   { value: "piece", label: "piece" }
+];
+
+// Meal timing options for when food is appropriate
+export const mealTimingOptions = [
+  { value: "morning", label: "Morning/Breakfast" },
+  { value: "lunch", label: "Lunch" },
+  { value: "dinner", label: "Dinner" }
 ];
 
 // Food-specific conversion tables for better accuracy

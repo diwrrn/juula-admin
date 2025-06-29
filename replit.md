@@ -100,6 +100,7 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - June 28, 2025: Added multilingual support (English, Kurdish, Arabic names) and smart serving units based on food type (solid/liquid)
 - June 28, 2025: Added 7 new nutrients (calcium, potassium, vitamin B12, A, E, D, iron) and removed description field
 - June 28, 2025: Simplified serving system - removed size field, now stores only available units for apps to use
+- June 29, 2025: Added meal timing feature - users can select multiple meal times (morning, lunch, dinner) for each food
 
 ## User Preferences
 

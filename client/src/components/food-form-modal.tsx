@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertFoodSchema, type Food, type InsertFood } from "@shared/schema";
-import { categoryConfig, allServingUnits, getSuggestedConversions } from "@shared/schema";
+import { categoryConfig, allServingUnits, mealTimingOptions, getSuggestedConversions } from "@shared/schema";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Plus, Minus } from "lucide-react";
@@ -52,6 +52,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
     vegan: food?.vegan || false,
     glutenFree: food?.glutenFree || false,
     dairyFree: food?.dairyFree || false,
+    mealTiming: food?.mealTiming || [],
   });
 
   const form = useForm<InsertFood>({
@@ -743,6 +744,47 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Meal Timing */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-gray-900">Meal Timing</h4>
+                <p className="text-sm text-gray-500">When is this food appropriate?</p>
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="mealTiming"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="grid grid-cols-3 gap-4">
+                        {mealTimingOptions.map((timing) => (
+                          <div key={timing.value} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={timing.value}
+                              checked={field.value?.includes(timing.value as any) || false}
+                              onCheckedChange={(checked) => {
+                                const currentTimings = field.value || [];
+                                if (checked) {
+                                  field.onChange([...currentTimings, timing.value as any]);
+                                } else {
+                                  field.onChange(currentTimings.filter(t => t !== timing.value));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={timing.value} className="text-sm font-medium">
+                              {timing.label}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             {/* Submit Buttons */}
