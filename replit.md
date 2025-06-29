@@ -32,8 +32,9 @@ This is a full-stack web application for managing a foods database. The applicat
 
 ### Data Models
 The application uses a comprehensive food schema defined in `shared/schema.ts`:
-- **Food Entity**: Includes multilingual names (English, Kurdish, Arabic), nutritional information, categorization, dietary restrictions
+- **Food Entity**: Includes multilingual names (English, Kurdish, Arabic), base name for meal planning, nutritional information, categorization, dietary restrictions
 - **Multilingual Support**: English name (required), Kurdish name (optional), Arabic name (optional)
+- **Base Name Field**: Simple food identifier for meal planners to prevent duplicate food selection (e.g., "chicken" for all chicken variants)
 - **Food Type System**: Solid/liquid classification with appropriate serving units
 - **Dynamic Serving Units**: 9 serving types (ml, l, g, cup, tbsp, tsp, plate, fist, piece) filtered based on food type
 - **Categories**: 8 predefined categories (fruits, vegetables, grains, proteins, dairy, beverages, snacks, condiments)
@@ -102,6 +103,7 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - June 28, 2025: Simplified serving system - removed size field, now stores only available units for apps to use
 - June 29, 2025: Added meal timing feature - users can select multiple meal times (morning, lunch, dinner) for each food
 - June 29, 2025: Added magnesium to nutrition tracking (9th vitamin/mineral) and teaspoon (tsp) to custom serving conversions
+- June 29, 2025: Added base name field for meal planner integration to prevent duplicate food selection (e.g., multiple chicken types)
 
 ## User Preferences
 

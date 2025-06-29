@@ -12,7 +12,7 @@ import { insertFoodSchema, type Food, type InsertFood } from "@shared/schema";
 
 import { categoryConfig, allServingUnits, mealTimingOptions, getSuggestedConversions } from "@shared/schema";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Plus, Minus } from "lucide-react";
 
 interface FoodFormModalProps {
