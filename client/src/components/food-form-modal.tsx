@@ -633,11 +633,11 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                  // Clear the form field completely
-                                  form.setValue("customConversions.cup", undefined, { shouldValidate: false });
-                                  form.clearErrors("customConversions.cup");
-                                  // Force re-render
-                                  form.trigger("customConversions.cup");
+                                  // Use form's reset to clear this specific field
+                                  const currentValues = form.getValues();
+                                  const updatedConversions = { ...currentValues.customConversions };
+                                  delete updatedConversions.cup;
+                                  form.setValue("customConversions", updatedConversions, { shouldValidate: false });
                                 }}
                                 className="px-2 shrink-0"
                               >
