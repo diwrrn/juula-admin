@@ -34,6 +34,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       name: food?.name || "",
       kurdishName: food?.kurdishName || "",
       arabicName: food?.arabicName || "",
+      baseName: food?.baseName || "",
       brand: food?.brand || "",
       category: food?.category || "fruits",
       foodType: defaultFoodType,
@@ -163,6 +164,23 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="baseName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Base Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="chicken, rice, apple..." {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Simple food name for meal planning (e.g., "chicken" for all chicken types)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-2 gap-4">
                 <FormField

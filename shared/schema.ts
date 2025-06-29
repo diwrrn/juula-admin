@@ -5,6 +5,7 @@ export const foodSchema = z.object({
   name: z.string().min(1, "Food name is required"),
   kurdishName: z.string().optional(),
   arabicName: z.string().optional(),
+  baseName: z.string().min(1, "Base name is required"),
   brand: z.string().optional(),
   category: z.enum([
     "fruits",

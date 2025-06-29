@@ -129,6 +129,11 @@ export function FoodsTable({
                       {food.arabicName && (
                         <div className="text-sm text-gray-600 font-medium">{food.arabicName}</div>
                       )}
+                      {food.baseName && (
+                        <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded mt-1 inline-block">
+                          Base: {food.baseName}
+                        </div>
+                      )}
                       {food.brand && (
                         <div className="text-sm text-gray-500">{food.brand}</div>
                       )}
