@@ -34,6 +34,7 @@ export const foodSchema = z.object({
     vitaminA: z.number().min(0).optional(),
     vitaminE: z.number().min(0).optional(),
     vitaminD: z.number().min(0).optional(),
+    vitaminC: z.number().min(0).optional(),
     iron: z.number().min(0).optional(),
     magnesium: z.number().min(0).optional()
   }),
@@ -50,6 +51,7 @@ export const foodSchema = z.object({
   vegan: z.boolean().optional(),
   glutenFree: z.boolean().optional(),
   dairyFree: z.boolean().optional(),
+  mealPlanner: z.boolean().optional(),
   mealTiming: z.array(z.enum(["morning", "lunch", "dinner"])).optional(),
   createdAt: z.date(),
   updatedAt: z.date(),

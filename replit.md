@@ -38,6 +38,8 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - **Food Type System**: Solid/liquid classification with appropriate serving units
 - **Dynamic Serving Units**: 9 serving types (ml, l, g, cup, tbsp, tsp, plate, fist, piece) filtered based on food type
 - **Categories**: 8 predefined categories (fruits, vegetables, grains, proteins, dairy, beverages, snacks, condiments)
+- **Nutrition System**: 10 vitamins/minerals tracked (calcium, potassium, vitamins B12, A, E, D, C, iron, magnesium)
+- **Meal Planner Integration**: Boolean field to control food inclusion in meal planning systems
 - **Validation**: Zod schemas for type-safe data validation
 
 ### UI Components
@@ -104,6 +106,7 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - June 29, 2025: Added meal timing feature - users can select multiple meal times (morning, lunch, dinner) for each food
 - June 29, 2025: Added magnesium to nutrition tracking (9th vitamin/mineral) and teaspoon (tsp) to custom serving conversions
 - June 29, 2025: Added base name field for meal planner integration to prevent duplicate food selection (e.g., multiple chicken types)
+- June 29, 2025: Added vitamin C nutrition field (10th vitamin/mineral) and meal planner boolean field for controlling food inclusion in meal planning
 
 ## User Preferences
 

@@ -53,6 +53,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
         vitaminA: food?.nutritionPer100?.vitaminA || 0,
         vitaminE: food?.nutritionPer100?.vitaminE || 0,
         vitaminD: food?.nutritionPer100?.vitaminD || 0,
+        vitaminC: food?.nutritionPer100?.vitaminC || 0,
         iron: food?.nutritionPer100?.iron || 0,
         magnesium: food?.nutritionPer100?.magnesium || 0,
       },
@@ -61,6 +62,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       vegan: food?.vegan || false,
       glutenFree: food?.glutenFree || false,
       dairyFree: food?.dairyFree || false,
+      mealPlanner: food?.mealPlanner || false,
       mealTiming: food?.mealTiming || [],
     };
   };
@@ -568,6 +570,26 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
 
                   <FormField
                     control={form.control}
+                    name="nutritionPer100.vitaminC"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vitamin C (mg)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1" 
+                            placeholder="0" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="nutritionPer100.iron"
                     render={({ field }) => (
                       <FormItem>
@@ -861,6 +883,22 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                           />
                         </FormControl>
                         <FormLabel>Dairy Free</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="mealPlanner"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>Include in Meal Planner</FormLabel>
                       </FormItem>
                     )}
                   />
