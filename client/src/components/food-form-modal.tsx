@@ -38,7 +38,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       brand: food?.brand || "",
       category: food?.category || "fruits",
       foodType: defaultFoodType,
-      availableUnits: food?.availableUnits || [...defaultUnits],
+      availableUnits: food?.availableUnits || [],
       nutritionPer100: {
         calories: food?.nutritionPer100?.calories || 0,
         protein: food?.nutritionPer100?.protein || 0,
