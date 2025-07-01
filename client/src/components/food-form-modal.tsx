@@ -63,6 +63,8 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       glutenFree: food?.glutenFree || false,
       dairyFree: food?.dairyFree || false,
       mealPlanner: food?.mealPlanner || false,
+      minPortion: food?.minPortion || undefined,
+      maxPortion: food?.maxPortion || undefined,
       mealTiming: food?.mealTiming || [],
     };
   };
@@ -902,6 +904,68 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                       </FormItem>
                     )}
                   />
+                </div>
+
+                {/* Portion Size Range */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-gray-900">Portion Size Range (grams)</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="minPortion"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Minimum Portion (g)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="1" 
+                              placeholder="e.g. 30"
+                              value={field.value || ""}
+                              onChange={(e) => {
+                                const value = e.target.value.trim();
+                                if (value === "") {
+                                  field.onChange(undefined);
+                                } else {
+                                  const numValue = parseInt(value);
+                                  field.onChange(isNaN(numValue) ? undefined : numValue);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="maxPortion"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Maximum Portion (g)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="1" 
+                              placeholder="e.g. 100"
+                              value={field.value || ""}
+                              onChange={(e) => {
+                                const value = e.target.value.trim();
+                                if (value === "") {
+                                  field.onChange(undefined);
+                                } else {
+                                  const numValue = parseInt(value);
+                                  field.onChange(isNaN(numValue) ? undefined : numValue);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

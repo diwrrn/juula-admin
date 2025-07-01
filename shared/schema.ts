@@ -15,7 +15,8 @@ export const foodSchema = z.object({
     "dairy",
     "beverages",
     "snacks",
-    "condiments"
+    "condiments",
+    "protein supplements"
   ]),
   foodType: z.enum(["solid", "liquid"]),
   availableUnits: z.array(z.enum(["ml", "l", "g", "cup", "tbsp", "tsp", "plate", "fist", "piece"])).optional(),
@@ -52,6 +53,8 @@ export const foodSchema = z.object({
   glutenFree: z.boolean().optional(),
   dairyFree: z.boolean().optional(),
   mealPlanner: z.boolean().optional(),
+  minPortion: z.number().positive().optional(),
+  maxPortion: z.number().positive().optional(),
   mealTiming: z.array(z.enum(["morning", "lunch", "dinner"])).optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -76,6 +79,7 @@ export const categoryConfig = {
   beverages: { label: "Beverages", color: "bg-cyan-100 text-cyan-800" },
   snacks: { label: "Snacks", color: "bg-orange-100 text-orange-800" },
   condiments: { label: "Condiments", color: "bg-gray-100 text-gray-800" },
+  "protein supplements": { label: "Protein Supplements", color: "bg-red-100 text-red-800" },
 };
 
 // Serving units configuration based on food type
