@@ -40,6 +40,7 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - **Categories**: 9 predefined categories (fruits, vegetables, grains, proteins, dairy, beverages, snacks, condiments, protein supplements)
 - **Nutrition System**: 10 vitamins/minerals tracked (calcium, potassium, vitamins B12, A, E, D, C, iron, magnesium)
 - **Meal Planner Integration**: Boolean field to control food inclusion in meal planning systems
+- **Duplication Control**: Boolean field to allow or prevent food duplication in meal plans
 - **Portion Control**: Minimum and maximum portion size fields (in grams) for meal planning guidance
 - **Validation**: Zod schemas for type-safe data validation
 
@@ -109,6 +110,7 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - June 29, 2025: Added base name field for meal planner integration to prevent duplicate food selection (e.g., multiple chicken types)
 - June 29, 2025: Added vitamin C nutrition field (10th vitamin/mineral) and meal planner boolean field for controlling food inclusion in meal planning
 - June 29, 2025: Added minimum and maximum portion size fields (in grams) for meal planning guidance and "Protein supplements" category
+- June 29, 2025: Added allowDuplication boolean field to control whether foods can be duplicated in meal plans
 
 ## User Preferences
 

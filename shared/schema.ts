@@ -53,6 +53,7 @@ export const foodSchema = z.object({
   glutenFree: z.boolean().optional(),
   dairyFree: z.boolean().optional(),
   mealPlanner: z.boolean().optional(),
+  allowDuplication: z.boolean().optional(),
   minPortion: z.number().min(0).optional(),
   maxPortion: z.number().min(0).optional(),
   mealTiming: z.array(z.enum(["morning", "lunch", "dinner"])).optional(),
