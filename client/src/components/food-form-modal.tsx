@@ -99,8 +99,15 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
     const cleanData = {
       ...data,
       availableUnits: data.availableUnits?.filter(Boolean) || [...defaultUnits] as ("ml" | "l" | "g" | "cup" | "tbsp" | "tsp" | "plate" | "fist" | "piece")[],
-      customConversions: cleanCustomConversions
+      customConversions: cleanCustomConversions,
+      // Remove undefined portion values for Firebase compatibility
+      minPortion: data.minPortion !== undefined ? data.minPortion : undefined,
+      maxPortion: data.maxPortion !== undefined ? data.maxPortion : undefined,
     };
+    
+    // Remove undefined fields entirely
+    if (cleanData.minPortion === undefined) delete cleanData.minPortion;
+    if (cleanData.maxPortion === undefined) delete cleanData.maxPortion;
     onSubmit(cleanData);
   };
 
