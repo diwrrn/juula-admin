@@ -64,6 +64,7 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
       dairyFree: food?.dairyFree || false,
       mealPlanner: food?.mealPlanner || false,
       allowDuplication: food?.allowDuplication || false,
+      lowCalorie: food?.lowCalorie || false,
       minPortion: food?.minPortion || undefined,
       maxPortion: food?.maxPortion || undefined,
       mealTiming: food?.mealTiming || [],
@@ -925,6 +926,22 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
                           />
                         </FormControl>
                         <FormLabel>Allow Duplication</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="lowCalorie"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>Low Calorie</FormLabel>
                       </FormItem>
                     )}
                   />
