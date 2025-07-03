@@ -186,6 +186,8 @@ export default function FoodsManager() {
         food.kurdishName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         food.arabicName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         food.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        food.baseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (food.mealPlanner && searchTerm.toLowerCase().includes('meal')) ||
         false;
       
       const matchesCategory = categoryFilter === "all" || food.category === categoryFilter;
@@ -342,6 +344,7 @@ export default function FoodsManager() {
                       // Add a sample rice item to demonstrate multiple servings
                       addFoodMutation.mutate({
                         name: "White Rice",
+                        baseName: "rice",
                         kurdishName: "برنج سپی",
                         arabicName: "أرز أبيض",
                         brand: "Demo",

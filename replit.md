@@ -42,6 +42,7 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - **Meal Planner Integration**: Boolean field to control food inclusion in meal planning systems
 - **Duplication Control**: Boolean field to allow or prevent food duplication in meal plans
 - **Low Calorie Classification**: Boolean field to mark foods as low calorie options
+- **Calorie Adjustment**: Boolean field to enable calorie adjustment for foods in meal planning
 - **Portion Control**: Minimum and maximum portion size fields (in grams) for meal planning guidance
 - **Validation**: Zod schemas for type-safe data validation
 
@@ -113,6 +114,8 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - June 29, 2025: Added minimum and maximum portion size fields (in grams) for meal planning guidance and "Protein supplements" category
 - June 29, 2025: Added allowDuplication boolean field to control whether foods can be duplicated in meal plans
 - June 30, 2025: Added lowCalorie boolean field to mark foods as low calorie options for diet filtering
+- June 30, 2025: Added calorieAdjustment boolean field to enable calorie adjustment for foods in meal planning
+- June 30, 2025: Enhanced search functionality to include mealPlanner boolean field when searching for "meal"
 
 ## User Preferences
 
