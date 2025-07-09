@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -102,16 +102,24 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
         basePortion: parseFloat(newFoodPortion),
         role: newFoodRole,
       };
-      setMealFoods([...mealFoods, newFood]);
+      const updatedFoods = [...mealFoods, newFood];
+      setMealFoods(updatedFoods);
       setSelectedFoodId("");
       setNewFoodPortion("");
       setFoodSearch("");
+      
+      // Update nutrition values after adding food
+      setTimeout(() => updateNutritionValues(), 0);
     }
   };
 
   // Remove food from meal
   const removeFoodFromMeal = (index: number) => {
-    setMealFoods(mealFoods.filter((_, i) => i !== index));
+    const updatedFoods = mealFoods.filter((_, i) => i !== index);
+    setMealFoods(updatedFoods);
+    
+    // Update nutrition values after removing food
+    setTimeout(() => updateNutritionValues(), 0);
   };
 
   // Get food name by ID
@@ -119,6 +127,51 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
     const food = foods.find(f => f.id === foodId);
     return food?.name || foodId;
   };
+
+  // Calculate base nutrition from all foods in the meal
+  const calculateBaseNutrition = () => {
+    let totalCalories = 0;
+    let totalProtein = 0;
+    let totalCarbs = 0;
+    let totalFat = 0;
+
+    mealFoods.forEach(mealFood => {
+      const food = foods.find(f => f.id === mealFood.foodId);
+      if (food) {
+        // Formula: (nutritionPer100g × basePortion) ÷ 100
+        const calories = (food.calories * mealFood.basePortion) / 100;
+        const protein = (food.protein * mealFood.basePortion) / 100;
+        const carbs = (food.carbs * mealFood.basePortion) / 100;
+        const fat = (food.fat * mealFood.basePortion) / 100;
+
+        totalCalories += calories;
+        totalProtein += protein;
+        totalCarbs += carbs;
+        totalFat += fat;
+      }
+    });
+
+    return {
+      calories: Math.round(totalCalories * 10) / 10,
+      protein: Math.round(totalProtein * 10) / 10,
+      carbs: Math.round(totalCarbs * 10) / 10,
+      fat: Math.round(totalFat * 10) / 10,
+    };
+  };
+
+  // Update form values when foods change
+  const updateNutritionValues = () => {
+    const nutrition = calculateBaseNutrition();
+    form.setValue("baseCalories", nutrition.calories);
+    form.setValue("baseProtein", nutrition.protein);
+    form.setValue("baseCarbs", nutrition.carbs);
+    form.setValue("baseFat", nutrition.fat);
+  };
+
+  // Recalculate nutrition when foods change
+  useEffect(() => {
+    updateNutritionValues();
+  }, [mealFoods, foods]);
 
   const addTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
@@ -227,7 +280,12 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
 
           {/* Nutrition Information */}
           <div className="space-y-4">
-            <h3 className="font-semibold">Base Nutrition (per serving)</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Base Nutrition (per serving)</h3>
+              <Badge variant="secondary" className="text-xs">
+                Auto-calculated from foods
+              </Badge>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="baseCalories">Calories*</Label>
@@ -235,7 +293,9 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                   id="baseCalories"
                   type="number"
                   {...form.register("baseCalories", { valueAsNumber: true })}
-                  placeholder="e.g., 485"
+                  placeholder="Auto-calculated"
+                  readOnly
+                  className="bg-gray-50"
                 />
               </div>
               <div>
@@ -245,7 +305,9 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                   type="number"
                   step="0.1"
                   {...form.register("baseProtein", { valueAsNumber: true })}
-                  placeholder="e.g., 32.5"
+                  placeholder="Auto-calculated"
+                  readOnly
+                  className="bg-gray-50"
                 />
               </div>
               <div>
@@ -255,7 +317,9 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                   type="number"
                   step="0.1"
                   {...form.register("baseCarbs", { valueAsNumber: true })}
-                  placeholder="e.g., 45.2"
+                  placeholder="Auto-calculated"
+                  readOnly
+                  className="bg-gray-50"
                 />
               </div>
               <div>
@@ -265,10 +329,15 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                   type="number"
                   step="0.1"
                   {...form.register("baseFat", { valueAsNumber: true })}
-                  placeholder="e.g., 18.7"
+                  placeholder="Auto-calculated"
+                  readOnly
+                  className="bg-gray-50"
                 />
               </div>
             </div>
+            <p className="text-sm text-gray-600">
+              Nutrition values are calculated using: (nutritionPer100g × basePortion) ÷ 100, then summed for all foods.
+            </p>
           </div>
 
           {/* Scaling & Metadata */}
@@ -390,27 +459,36 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
               <div className="space-y-2">
                 <Label>Current Foods ({mealFoods.length})</Label>
                 <div className="space-y-2">
-                  {mealFoods.map((mealFood, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex-1">
-                        <div className="font-medium">{getFoodName(mealFood.foodId)}</div>
-                        <div className="text-sm text-gray-500">
-                          {mealFood.basePortion}g • {mealFood.role.replace('_', ' ')}
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFoodFromMeal(index)}
+                  {mealFoods.map((mealFood, index) => {
+                    const food = foods.find(f => f.id === mealFood.foodId);
+                    const calories = food ? Math.round(((food.calories * mealFood.basePortion) / 100) * 10) / 10 : 0;
+                    const protein = food ? Math.round(((food.protein * mealFood.basePortion) / 100) * 10) / 10 : 0;
+                    
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                        <div className="flex-1">
+                          <div className="font-medium">{getFoodName(mealFood.foodId)}</div>
+                          <div className="text-sm text-gray-500">
+                            {mealFood.basePortion}g • {mealFood.role.replace('_', ' ')}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            Contributes: {calories} cal, {protein}g protein
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFoodFromMeal(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

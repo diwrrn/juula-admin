@@ -128,6 +128,7 @@ The application now includes a comprehensive meals system defined in `shared/sch
 - June 30, 2025: Enhanced search functionality to include mealPlanner boolean field when searching for "meal"
 - July 9, 2025: Added comprehensive meals system with multilingual support, food references, nutrition scaling, and cultural classifications
 - July 9, 2025: Created MealsManager interface with grid view, filtering, and navigation between Foods and Meals sections
+- July 9, 2025: Enhanced meal form with automatic nutrition calculation using formula: (nutritionPer100g × basePortion) ÷ 100, then summed for all foods in the meal
 
 ## User Preferences
 
