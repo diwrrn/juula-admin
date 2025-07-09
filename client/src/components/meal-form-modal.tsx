@@ -187,12 +187,12 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
 
     mealFoods.forEach(mealFood => {
       const food = foods.find(f => f.id === mealFood.foodId);
-      if (food) {
+      if (food && food.nutritionPer100) {
         // Formula: (nutritionPer100g × basePortion) ÷ 100
-        const calories = (food.calories * mealFood.basePortion) / 100;
-        const protein = (food.protein * mealFood.basePortion) / 100;
-        const carbs = (food.carbs * mealFood.basePortion) / 100;
-        const fat = (food.fat * mealFood.basePortion) / 100;
+        const calories = (food.nutritionPer100.calories * mealFood.basePortion) / 100;
+        const protein = ((food.nutritionPer100.protein || 0) * mealFood.basePortion) / 100;
+        const carbs = ((food.nutritionPer100.carbs || 0) * mealFood.basePortion) / 100;
+        const fat = ((food.nutritionPer100.fat || 0) * mealFood.basePortion) / 100;
 
         totalCalories += calories;
         totalProtein += protein;
@@ -513,8 +513,8 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                 <div className="space-y-2">
                   {mealFoods.map((mealFood, index) => {
                     const food = foods.find(f => f.id === mealFood.foodId);
-                    const calories = food ? Math.round(((food.calories * mealFood.basePortion) / 100) * 10) / 10 : 0;
-                    const protein = food ? Math.round(((food.protein * mealFood.basePortion) / 100) * 10) / 10 : 0;
+                    const calories = food && food.nutritionPer100 ? Math.round(((food.nutritionPer100.calories * mealFood.basePortion) / 100) * 10) / 10 : 0;
+                    const protein = food && food.nutritionPer100 ? Math.round((((food.nutritionPer100.protein || 0) * mealFood.basePortion) / 100) * 10) / 10 : 0;
                     
                     return (
                       <div
