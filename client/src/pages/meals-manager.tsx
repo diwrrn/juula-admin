@@ -22,6 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { ChefHat, Plus, Search, Clock, Users, Star, Edit, Trash2, Utensils } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { MealFormModal } from "@/components/meal-form-modal";
 
 export default function MealsManager() {
   const { toast } = useToast();
@@ -32,6 +33,8 @@ export default function MealsManager() {
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
 
   // Fetch meals from Firestore
   const { data: meals = [], isLoading: mealsLoading, error: mealsError } = useQuery({
@@ -131,6 +134,34 @@ export default function MealsManager() {
       toast({
         title: "Error",
         description: `Failed to add sample meal: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Add meal mutation
+  const addMealMutation = useMutation({
+    mutationFn: async (newMeal: InsertMeal) => {
+      const mealsCollection = collection(db, "meals");
+      const now = new Date();
+      await addDoc(mealsCollection, {
+        ...newMeal,
+        createdAt: now,
+        updatedAt: now,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Meal added successfully",
+      });
+      setIsAddModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to add meal: ${error.message}`,
         variant: "destructive",
       });
     },
@@ -290,7 +321,10 @@ export default function MealsManager() {
               {addSampleMealMutation.isPending ? <LoadingSpinner size="sm" className="mr-2" /> : null}
               Add Sample Meal
             </Button>
-            <Button className="bg-primary hover:bg-blue-700">
+            <Button 
+              className="bg-primary hover:bg-blue-700"
+              onClick={() => setIsAddModalOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add New Meal
             </Button>
@@ -403,6 +437,15 @@ export default function MealsManager() {
           </div>
         )}
       </div>
+
+      {/* Add Meal Modal */}
+      <MealFormModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        meal={editingMeal}
+        onSubmit={addMealMutation.mutate}
+        isLoading={addMealMutation.isPending}
+      />
     </div>
   );
 }
