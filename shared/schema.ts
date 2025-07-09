@@ -284,7 +284,8 @@ export function getSuggestedConversions(foodName: string, foodType: "solid" | "l
 export const mealFoodSchema = z.object({
   foodId: z.string(),
   basePortion: z.number().positive(),
-  role: z.enum(["protein_primary", "carb_primary", "filler", "fat_primary", "vegetable", "fruit", "snack"])
+  role: z.enum(["protein_primary", "carb_primary", "filler", "fat_primary", "vegetable", "fruit", "snack"]),
+  allowedPortions: z.array(z.number().positive()).optional()
 });
 
 export const mealSchema = z.object({

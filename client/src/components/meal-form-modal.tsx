@@ -38,6 +38,7 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
   const [selectedFoodId, setSelectedFoodId] = useState("");
   const [newFoodPortion, setNewFoodPortion] = useState("");
   const [newFoodRole, setNewFoodRole] = useState<"protein_primary" | "carb_primary" | "fat_primary" | "filler">("protein_primary");
+  const [newAllowedPortions, setNewAllowedPortions] = useState("");
 
   // Initialize form data when meal prop changes
   useEffect(() => {
@@ -55,6 +56,7 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
     setSelectedFoodId("");
     setNewFoodPortion("");
     setNewFoodRole("protein_primary");
+    setNewAllowedPortions("");
     setNewTag("");
   }, [meal]);
 
@@ -161,15 +163,23 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
   // Add food to meal
   const addFoodToMeal = () => {
     if (selectedFoodId && newFoodPortion) {
+      // Parse allowed portions from comma-separated string
+      const allowedPortions = newAllowedPortions
+        .split(',')
+        .map(p => parseFloat(p.trim()))
+        .filter(p => !isNaN(p) && p > 0);
+      
       const newFood: MealFood = {
         foodId: selectedFoodId,
         basePortion: parseFloat(newFoodPortion),
         role: newFoodRole,
+        allowedPortions: allowedPortions.length > 0 ? allowedPortions : undefined,
       };
       const updatedFoods = [...mealFoods, newFood];
       setMealFoods(updatedFoods);
       setSelectedFoodId("");
       setNewFoodPortion("");
+      setNewAllowedPortions("");
       setFoodSearch("");
     }
   };
@@ -502,6 +512,18 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                   </div>
                 </div>
 
+                <div>
+                  <Label>Allowed Portions (g)</Label>
+                  <Input
+                    placeholder="e.g., 120, 190, 250"
+                    value={newAllowedPortions}
+                    onChange={(e) => setNewAllowedPortions(e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Comma-separated values (optional)
+                  </p>
+                </div>
+
                 <Button
                   type="button"
                   onClick={addFoodToMeal}
@@ -537,6 +559,11 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                           <div className="text-xs text-gray-400">
                             Contributes: {calories} cal, {protein}g protein
                           </div>
+                          {mealFood.allowedPortions && mealFood.allowedPortions.length > 0 && (
+                            <div className="text-xs text-blue-600 mt-1">
+                              Allowed portions: {mealFood.allowedPortions.join(', ')}g
+                            </div>
+                          )}
                         </div>
                         <Button
                           type="button"
