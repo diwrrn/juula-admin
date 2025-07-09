@@ -23,8 +23,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Utensils, Plus, Search, Filter, Download, CheckCircle } from "lucide-react";
+import { Utensils, Plus, Search, Filter, Download, CheckCircle, ChefHat } from "lucide-react";
 import { useEffect } from "react";
+import { Link, useLocation } from "wouter";
 
 export default function FoodsManager() {
   const { toast } = useToast();
@@ -281,6 +282,20 @@ export default function FoodsManager() {
           <div className="flex items-center space-x-4">
             <Utensils className="text-primary text-2xl" />
             <h1 className="text-xl font-medium text-gray-900">Foods Database Manager</h1>
+            <nav className="flex items-center space-x-1 ml-8">
+              <Link href="/">
+                <Button variant="ghost" size="sm" className="text-blue-600 bg-blue-50">
+                  <Utensils className="h-4 w-4 mr-1" />
+                  Foods
+                </Button>
+              </Link>
+              <Link href="/meals">
+                <Button variant="ghost" size="sm">
+                  <ChefHat className="h-4 w-4 mr-1" />
+                  Meals
+                </Button>
+              </Link>
+            </nav>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">

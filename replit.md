@@ -46,11 +46,21 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - **Portion Control**: Minimum and maximum portion size fields (in grams) for meal planning guidance
 - **Validation**: Zod schemas for type-safe data validation
 
+### Meals Data Models
+The application now includes a comprehensive meals system defined in `shared/schema.ts`:
+- **Meal Entity**: Complete meal recipes with multilingual support (English, Kurdish, Arabic)
+- **Food References**: Array of food items with base portions and roles (protein_primary, carb_primary, filler, etc.)
+- **Nutrition Scaling**: Base nutrition values with min/max scaling factors (0.5x to 2.5x)
+- **Meal Classification**: Meal type (breakfast, lunch, dinner, snack) and difficulty levels
+- **Cultural Tags**: Support for Arabic, Kurdish, Western, Mediterranean, and Asian cuisines
+- **Metadata**: Prep time, difficulty, custom tags, and active status control
+
 ### UI Components
 - **FoodsTable**: Main data grid with sorting, selection, and bulk operations
 - **FoodFormModal**: Form for adding/editing food items
 - **BulkActionsBar**: Interface for batch operations (delete, export)
 - **DeleteConfirmationModal**: Safety confirmation for deletions
+- **MealsManager**: Complete meal management interface with grid view and navigation
 
 ### Key Features
 - **CRUD Operations**: Full create, read, update, delete functionality
@@ -116,6 +126,8 @@ The application uses a comprehensive food schema defined in `shared/schema.ts`:
 - June 30, 2025: Added lowCalorie boolean field to mark foods as low calorie options for diet filtering
 - June 30, 2025: Added calorieAdjustment boolean field to enable calorie adjustment for foods in meal planning
 - June 30, 2025: Enhanced search functionality to include mealPlanner boolean field when searching for "meal"
+- July 9, 2025: Added comprehensive meals system with multilingual support, food references, nutrition scaling, and cultural classifications
+- July 9, 2025: Created MealsManager interface with grid view, filtering, and navigation between Foods and Meals sections
 
 ## User Preferences
 

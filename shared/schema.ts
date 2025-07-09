@@ -279,3 +279,42 @@ export function getSuggestedConversions(foodName: string, foodType: "solid" | "l
   // Return null for no suggestions (will use defaults)
   return null;
 }
+
+// Meals Schema
+export const mealFoodSchema = z.object({
+  foodId: z.string(),
+  basePortion: z.number().positive(),
+  role: z.enum(["protein_primary", "carb_primary", "filler", "fat_primary", "vegetable", "fruit", "snack"])
+});
+
+export const mealSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Meal name is required"),
+  mealArabicName: z.string().optional(),
+  mealKurdishName: z.string().optional(),
+  mealType: z.enum(["breakfast", "lunch", "dinner", "snack"]),
+  foods: z.array(mealFoodSchema),
+  baseCalories: z.number().min(0),
+  baseProtein: z.number().min(0),
+  baseCarbs: z.number().min(0),
+  baseFat: z.number().min(0),
+  minScale: z.number().min(0.1).max(1),
+  maxScale: z.number().min(1).max(5),
+  prepTime: z.number().min(0),
+  difficulty: z.enum(["easy", "medium", "hard"]),
+  cultural: z.array(z.enum(["arabic", "kurdish", "western", "mediterranean", "asian"])),
+  tags: z.array(z.string()),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  isActive: z.boolean()
+});
+
+export const insertMealSchema = mealSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export type Meal = z.infer<typeof mealSchema>;
+export type InsertMeal = z.infer<typeof insertMealSchema>;
+export type MealFood = z.infer<typeof mealFoodSchema>;
