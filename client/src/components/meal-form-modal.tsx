@@ -41,27 +41,29 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
   const [newFoodRole, setNewFoodRole] = useState<"protein_primary" | "carb_primary" | "fat_primary" | "filler">("protein_primary");
   const [newAllowedPortions, setNewAllowedPortions] = useState("");
 
-  // Initialize form data when meal prop changes
+  // Initialize form data when meal prop changes or modal opens
   useEffect(() => {
-    if (meal) {
-      setSelectedCultures(meal.cultural || []);
-      setSelectedMealTypes(Array.isArray(meal.mealType) ? meal.mealType : [meal.mealType]);
-      setTags(meal.tags || []);
-      setMealFoods(meal.foods || []);
-    } else {
-      setSelectedCultures([]);
-      setSelectedMealTypes([]);
-      setTags([]);
-      setMealFoods([]);
+    if (isOpen) {
+      if (meal) {
+        setSelectedCultures(meal.cultural || []);
+        setSelectedMealTypes(Array.isArray(meal.mealType) ? meal.mealType : [meal.mealType]);
+        setTags(meal.tags || []);
+        setMealFoods(meal.foods || []);
+      } else {
+        setSelectedCultures([]);
+        setSelectedMealTypes(["breakfast"]);
+        setTags([]);
+        setMealFoods([]);
+      }
+      // Reset search states
+      setFoodSearch("");
+      setSelectedFoodId("");
+      setNewFoodPortion("");
+      setNewFoodRole("protein_primary");
+      setNewAllowedPortions("");
+      setNewTag("");
     }
-    // Reset search states
-    setFoodSearch("");
-    setSelectedFoodId("");
-    setNewFoodPortion("");
-    setNewFoodRole("protein_primary");
-    setNewAllowedPortions("");
-    setNewTag("");
-  }, [meal]);
+  }, [meal, isOpen]);
 
   // Fetch foods from Firestore
   const { data: foods = [] } = useQuery({
@@ -102,50 +104,52 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
     },
   });
 
-  // Reset form when meal changes
+  // Reset form when meal changes or modal opens
   useEffect(() => {
-    if (meal) {
-      form.reset({
-        name: meal.name || "",
-        mealArabicName: meal.mealArabicName || "",
-        mealKurdishName: meal.mealKurdishName || "",
-        mealType: Array.isArray(meal.mealType) ? meal.mealType : [meal.mealType || "breakfast"],
-        foods: meal.foods || [],
-        baseCalories: meal.baseCalories || 0,
-        baseProtein: meal.baseProtein || 0,
-        baseCarbs: meal.baseCarbs || 0,
-        baseFat: meal.baseFat || 0,
-        minScale: meal.minScale || 0.5,
-        maxScale: meal.maxScale || 2.0,
-        prepTime: meal.prepTime || 0,
-        difficulty: meal.difficulty || "easy",
-        cultural: meal.cultural || [],
-        tags: meal.tags || [],
-        isActive: meal.isActive ?? true,
-      });
-    } else {
-      form.reset({
-        name: "",
-        mealArabicName: "",
-        mealKurdishName: "",
-        mealType: ["breakfast"],
-        foods: [],
-        baseCalories: 0,
-        baseProtein: 0,
-        baseCarbs: 0,
-        baseFat: 0,
-        minScale: 0.5,
-        maxScale: 2.0,
-        prepTime: 0,
-        difficulty: "easy",
-        cultural: [],
-        tags: [],
-        isActive: true,
-      });
+    if (isOpen) {
+      if (meal) {
+        form.reset({
+          name: meal.name || "",
+          mealArabicName: meal.mealArabicName || "",
+          mealKurdishName: meal.mealKurdishName || "",
+          mealType: Array.isArray(meal.mealType) ? meal.mealType : [meal.mealType || "breakfast"],
+          foods: meal.foods || [],
+          baseCalories: meal.baseCalories || 0,
+          baseProtein: meal.baseProtein || 0,
+          baseCarbs: meal.baseCarbs || 0,
+          baseFat: meal.baseFat || 0,
+          minScale: meal.minScale || 0.5,
+          maxScale: meal.maxScale || 2.0,
+          prepTime: meal.prepTime || 0,
+          difficulty: meal.difficulty || "easy",
+          cultural: meal.cultural || [],
+          tags: meal.tags || [],
+          isActive: meal.isActive ?? true,
+        });
+      } else {
+        form.reset({
+          name: "",
+          mealArabicName: "",
+          mealKurdishName: "",
+          mealType: ["breakfast"],
+          foods: [],
+          baseCalories: 0,
+          baseProtein: 0,
+          baseCarbs: 0,
+          baseFat: 0,
+          minScale: 0.5,
+          maxScale: 2.0,
+          prepTime: 0,
+          difficulty: "easy",
+          cultural: [],
+          tags: [],
+          isActive: true,
+        });
+      }
+      // Clear form validation errors
+      form.clearErrors();
     }
-    // Clear form validation errors
-    form.clearErrors();
-  }, [meal, form]);
+  }, [meal, form, isOpen]);
 
   const handleSubmit = (data: InsertMeal) => {
     onSubmit({
