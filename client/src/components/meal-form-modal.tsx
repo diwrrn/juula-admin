@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { insertMealSchema, type InsertMeal, type Meal } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
+import { collection, getDocs, query as firestoreQuery, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { insertMealSchema, type InsertMeal, type Meal, type Food, type MealFood } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { X, Plus, Search, Trash2 } from "lucide-react";
 
 interface MealFormModalProps {
   isOpen: boolean;
@@ -29,6 +33,28 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
   const [newTag, setNewTag] = useState("");
   const [selectedCultures, setSelectedCultures] = useState<string[]>(meal?.cultural || []);
   const [tags, setTags] = useState<string[]>(meal?.tags || []);
+  const [mealFoods, setMealFoods] = useState<MealFood[]>(meal?.foods || []);
+  const [foodSearch, setFoodSearch] = useState("");
+  const [selectedFoodId, setSelectedFoodId] = useState("");
+  const [newFoodPortion, setNewFoodPortion] = useState("");
+  const [newFoodRole, setNewFoodRole] = useState<"protein_primary" | "carb_primary" | "fat_primary" | "filler">("protein_primary");
+
+  // Fetch foods from Firestore
+  const { data: foods = [] } = useQuery({
+    queryKey: ["/api/foods"],
+    queryFn: async () => {
+      const foodsCollection = collection(db, "foods");
+      const q = firestoreQuery(foodsCollection, orderBy("name"));
+      const snapshot = await getDocs(q);
+      
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate() || new Date(),
+        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+      })) as Food[];
+    },
+  });
 
   const form = useForm<InsertMeal>({
     resolver: zodResolver(formSchema),
@@ -55,9 +81,43 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
   const handleSubmit = (data: InsertMeal) => {
     onSubmit({
       ...data,
+      foods: mealFoods,
       cultural: selectedCultures,
       tags: tags,
     });
+  };
+
+  // Filter foods based on search
+  const filteredFoods = foods.filter(food => 
+    food.name.toLowerCase().includes(foodSearch.toLowerCase()) ||
+    food.kurdishName?.toLowerCase().includes(foodSearch.toLowerCase()) ||
+    food.arabicName?.toLowerCase().includes(foodSearch.toLowerCase())
+  );
+
+  // Add food to meal
+  const addFoodToMeal = () => {
+    if (selectedFoodId && newFoodPortion) {
+      const newFood: MealFood = {
+        foodId: selectedFoodId,
+        basePortion: parseFloat(newFoodPortion),
+        role: newFoodRole,
+      };
+      setMealFoods([...mealFoods, newFood]);
+      setSelectedFoodId("");
+      setNewFoodPortion("");
+      setFoodSearch("");
+    }
+  };
+
+  // Remove food from meal
+  const removeFoodFromMeal = (index: number) => {
+    setMealFoods(mealFoods.filter((_, i) => i !== index));
+  };
+
+  // Get food name by ID
+  const getFoodName = (foodId: string) => {
+    const food = foods.find(f => f.id === foodId);
+    return food?.name || foodId;
   };
 
   const addTag = () => {
@@ -242,6 +302,118 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                 placeholder="e.g., 10"
               />
             </div>
+          </div>
+
+          {/* Foods Management */}
+          <div className="space-y-4">
+            <h3 className="font-semibold">Foods in this Meal</h3>
+            
+            {/* Add New Food */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Add Food</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Search Food</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Search foods..."
+                      value={foodSearch}
+                      onChange={(e) => setFoodSearch(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  {foodSearch && filteredFoods.length > 0 && (
+                    <div className="max-h-40 overflow-y-auto border rounded-md">
+                      {filteredFoods.slice(0, 10).map((food) => (
+                        <div
+                          key={food.id}
+                          className="p-2 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+                          onClick={() => {
+                            setSelectedFoodId(food.id);
+                            setFoodSearch(food.name);
+                          }}
+                        >
+                          <div className="font-medium">{food.name}</div>
+                          <div className="text-sm text-gray-500">
+                            {food.arabicName && <span>{food.arabicName}</span>}
+                            {food.kurdishName && <span> • {food.kurdishName}</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Base Portion (g)</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g., 120"
+                      value={newFoodPortion}
+                      onChange={(e) => setNewFoodPortion(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Role</Label>
+                    <Select value={newFoodRole} onValueChange={setNewFoodRole}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="protein_primary">Protein Primary</SelectItem>
+                        <SelectItem value="carb_primary">Carb Primary</SelectItem>
+                        <SelectItem value="fat_primary">Fat Primary</SelectItem>
+                        <SelectItem value="filler">Filler</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={addFoodToMeal}
+                  disabled={!selectedFoodId || !newFoodPortion}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Food to Meal
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Current Foods in Meal */}
+            {mealFoods.length > 0 && (
+              <div className="space-y-2">
+                <Label>Current Foods ({mealFoods.length})</Label>
+                <div className="space-y-2">
+                  {mealFoods.map((mealFood, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <div className="font-medium">{getFoodName(mealFood.foodId)}</div>
+                        <div className="text-sm text-gray-500">
+                          {mealFood.basePortion}g • {mealFood.role.replace('_', ' ')}
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFoodFromMeal(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Cultural Tags */}
