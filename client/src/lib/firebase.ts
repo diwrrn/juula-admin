@@ -18,15 +18,15 @@ export const app = initializeApp(firebaseConfig);
 // Initialize Firestore
 export const db = getFirestore(app);
 
-// Connect to Firestore emulator in development
-if (import.meta.env.DEV) {
-  try {
-    connectFirestoreEmulator(db, 'localhost', 8080);
-    console.log('Connected to Firestore emulator');
-  } catch (error) {
-    console.log('Firestore emulator connection failed:', error);
-  }
-}
+// Connect to Firestore emulator in development (disabled for production use)
+// if (import.meta.env.DEV) {
+//   try {
+//     connectFirestoreEmulator(db, 'localhost', 8080);
+//     console.log('Connected to Firestore emulator');
+//   } catch (error) {
+//     console.log('Firestore emulator connection failed:', error);
+//   }
+// }
 
 // Initialize Analytics (only in production)
 let analytics;

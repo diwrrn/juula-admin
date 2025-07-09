@@ -129,6 +129,8 @@ The application now includes a comprehensive meals system defined in `shared/sch
 - July 9, 2025: Added comprehensive meals system with multilingual support, food references, nutrition scaling, and cultural classifications
 - July 9, 2025: Created MealsManager interface with grid view, filtering, and navigation between Foods and Meals sections
 - July 9, 2025: Enhanced meal form with automatic nutrition calculation using formula: (nutritionPer100g × basePortion) ÷ 100, then summed for all foods in the meal
+- July 9, 2025: Added "Allowed Portions" field to meal foods accepting comma-separated numbers (e.g., 120, 190, 250g)
+- July 9, 2025: Updated meal types to support multiple selections (e.g., lunch and dinner) with array-based storage and badge-style UI
 
 ## User Preferences
 

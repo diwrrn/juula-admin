@@ -98,7 +98,7 @@ export default function MealsManager() {
         name: "Protein Power Breakfast",
         mealArabicName: "فطار البروتين القوي",
         mealKurdishName: "نان ی پڕوتین",
-        mealType: "breakfast",
+        mealType: ["breakfast"],
         foods: [
           { foodId: "sample_eggs", basePortion: 120, role: "protein_primary" },
           { foodId: "sample_bread", basePortion: 75, role: "carb_primary" },
@@ -224,7 +224,8 @@ export default function MealsManager() {
         meal.mealKurdishName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         meal.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       
-      const matchesMealType = mealTypeFilter === "all" || meal.mealType === mealTypeFilter;
+      const matchesMealType = mealTypeFilter === "all" || 
+        (Array.isArray(meal.mealType) ? meal.mealType.includes(mealTypeFilter) : meal.mealType === mealTypeFilter);
       const matchesDifficulty = difficultyFilter === "all" || meal.difficulty === difficultyFilter;
       
       return matchesSearch && matchesMealType && matchesDifficulty && meal.isActive;
@@ -408,10 +409,12 @@ export default function MealsManager() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Badge className={getMealTypeColor(meal.mealType)}>
-                        {meal.mealType}
-                      </Badge>
+                    <div className="flex items-center space-x-2 flex-wrap">
+                      {(Array.isArray(meal.mealType) ? meal.mealType : [meal.mealType]).map((type, index) => (
+                        <Badge key={index} className={getMealTypeColor(type)}>
+                          {type}
+                        </Badge>
+                      ))}
                       <Badge className={getDifficultyColor(meal.difficulty)}>
                         {meal.difficulty}
                       </Badge>

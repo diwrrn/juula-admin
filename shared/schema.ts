@@ -293,7 +293,7 @@ export const mealSchema = z.object({
   name: z.string().min(1, "Meal name is required"),
   mealArabicName: z.string().optional(),
   mealKurdishName: z.string().optional(),
-  mealType: z.enum(["breakfast", "lunch", "dinner", "snack"]),
+  mealType: z.array(z.enum(["breakfast", "lunch", "dinner", "snack"])).min(1, "At least one meal type is required"),
   foods: z.array(mealFoodSchema),
   baseCalories: z.number().min(0),
   baseProtein: z.number().min(0),

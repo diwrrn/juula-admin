@@ -32,6 +32,7 @@ const formSchema = insertMealSchema.extend({
 export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: MealFormModalProps) {
   const [newTag, setNewTag] = useState("");
   const [selectedCultures, setSelectedCultures] = useState<string[]>([]);
+  const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [mealFoods, setMealFoods] = useState<MealFood[]>([]);
   const [foodSearch, setFoodSearch] = useState("");
@@ -44,10 +45,12 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
   useEffect(() => {
     if (meal) {
       setSelectedCultures(meal.cultural || []);
+      setSelectedMealTypes(Array.isArray(meal.mealType) ? meal.mealType : [meal.mealType]);
       setTags(meal.tags || []);
       setMealFoods(meal.foods || []);
     } else {
       setSelectedCultures([]);
+      setSelectedMealTypes([]);
       setTags([]);
       setMealFoods([]);
     }
@@ -83,7 +86,7 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
       name: "",
       mealArabicName: "",
       mealKurdishName: "",
-      mealType: "breakfast",
+      mealType: ["breakfast"],
       foods: [],
       baseCalories: 0,
       baseProtein: 0,
@@ -106,7 +109,7 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
         name: meal.name || "",
         mealArabicName: meal.mealArabicName || "",
         mealKurdishName: meal.mealKurdishName || "",
-        mealType: meal.mealType || "breakfast",
+        mealType: Array.isArray(meal.mealType) ? meal.mealType : [meal.mealType || "breakfast"],
         foods: meal.foods || [],
         baseCalories: meal.baseCalories || 0,
         baseProtein: meal.baseProtein || 0,
@@ -125,7 +128,7 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
         name: "",
         mealArabicName: "",
         mealKurdishName: "",
-        mealType: "breakfast",
+        mealType: ["breakfast"],
         foods: [],
         baseCalories: 0,
         baseProtein: 0,
@@ -147,6 +150,7 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
   const handleSubmit = (data: InsertMeal) => {
     onSubmit({
       ...data,
+      mealType: selectedMealTypes,
       foods: mealFoods,
       cultural: selectedCultures,
       tags: tags,
@@ -262,7 +266,16 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
     );
   };
 
+  const toggleMealType = (mealType: string) => {
+    setSelectedMealTypes(prev => 
+      prev.includes(mealType) 
+        ? prev.filter(mt => mt !== mealType)
+        : [...prev, mealType]
+    );
+  };
+
   const culturalOptions = ["arabic", "kurdish", "western", "mediterranean", "asian"];
+  const mealTypeOptions = ["breakfast", "lunch", "dinner", "snack"];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -311,23 +324,24 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
           </div>
 
           {/* Classification */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="mealType">Meal Type*</Label>
-              <Select 
-                value={form.watch("mealType")} 
-                onValueChange={(value) => form.setValue("mealType", value as any)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select meal type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="breakfast">Breakfast</SelectItem>
-                  <SelectItem value="lunch">Lunch</SelectItem>
-                  <SelectItem value="dinner">Dinner</SelectItem>
-                  <SelectItem value="snack">Snack</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Meal Types*</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {mealTypeOptions.map((mealType) => (
+                  <Badge
+                    key={mealType}
+                    variant={selectedMealTypes.includes(mealType) ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => toggleMealType(mealType)}
+                  >
+                    {mealType}
+                  </Badge>
+                ))}
+              </div>
+              {selectedMealTypes.length === 0 && (
+                <p className="text-sm text-red-500 mt-1">At least one meal type is required</p>
+              )}
             </div>
 
             <div>
