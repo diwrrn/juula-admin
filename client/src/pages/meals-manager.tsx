@@ -156,12 +156,40 @@ export default function MealsManager() {
         description: "Meal added successfully",
       });
       setIsAddModalOpen(false);
+      setEditingMeal(null);
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
     },
     onError: (error) => {
       toast({
         title: "Error",
         description: `Failed to add meal: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update meal mutation
+  const updateMealMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<InsertMeal> }) => {
+      const mealDoc = doc(db, "meals", id);
+      await updateDoc(mealDoc, {
+        ...data,
+        updatedAt: new Date(),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Meal updated successfully",
+      });
+      setIsAddModalOpen(false);
+      setEditingMeal(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update meal: ${error.message}`,
         variant: "destructive",
       });
     },
@@ -354,7 +382,14 @@ export default function MealsManager() {
                       )}
                     </div>
                     <div className="flex space-x-1">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          setEditingMeal(meal);
+                          setIsAddModalOpen(true);
+                        }}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button 
@@ -438,13 +473,22 @@ export default function MealsManager() {
         )}
       </div>
 
-      {/* Add Meal Modal */}
+      {/* Add/Edit Meal Modal */}
       <MealFormModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingMeal(null);
+        }}
         meal={editingMeal}
-        onSubmit={addMealMutation.mutate}
-        isLoading={addMealMutation.isPending}
+        onSubmit={(data) => {
+          if (editingMeal) {
+            updateMealMutation.mutate({ id: editingMeal.id, data });
+          } else {
+            addMealMutation.mutate(data);
+          }
+        }}
+        isLoading={addMealMutation.isPending || updateMealMutation.isPending}
       />
     </div>
   );

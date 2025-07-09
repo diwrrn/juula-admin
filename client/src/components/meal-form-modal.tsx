@@ -31,13 +31,26 @@ const formSchema = insertMealSchema.extend({
 
 export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: MealFormModalProps) {
   const [newTag, setNewTag] = useState("");
-  const [selectedCultures, setSelectedCultures] = useState<string[]>(meal?.cultural || []);
-  const [tags, setTags] = useState<string[]>(meal?.tags || []);
-  const [mealFoods, setMealFoods] = useState<MealFood[]>(meal?.foods || []);
+  const [selectedCultures, setSelectedCultures] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [mealFoods, setMealFoods] = useState<MealFood[]>([]);
   const [foodSearch, setFoodSearch] = useState("");
   const [selectedFoodId, setSelectedFoodId] = useState("");
   const [newFoodPortion, setNewFoodPortion] = useState("");
   const [newFoodRole, setNewFoodRole] = useState<"protein_primary" | "carb_primary" | "fat_primary" | "filler">("protein_primary");
+
+  // Initialize form data when meal prop changes
+  useEffect(() => {
+    if (meal) {
+      setSelectedCultures(meal.cultural || []);
+      setTags(meal.tags || []);
+      setMealFoods(meal.foods || []);
+    } else {
+      setSelectedCultures([]);
+      setTags([]);
+      setMealFoods([]);
+    }
+  }, [meal]);
 
   // Fetch foods from Firestore
   const { data: foods = [] } = useQuery({
@@ -59,24 +72,67 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
   const form = useForm<InsertMeal>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: meal?.name || "",
-      mealArabicName: meal?.mealArabicName || "",
-      mealKurdishName: meal?.mealKurdishName || "",
-      mealType: meal?.mealType || "breakfast",
-      foods: meal?.foods || [],
-      baseCalories: meal?.baseCalories || 0,
-      baseProtein: meal?.baseProtein || 0,
-      baseCarbs: meal?.baseCarbs || 0,
-      baseFat: meal?.baseFat || 0,
-      minScale: meal?.minScale || 0.5,
-      maxScale: meal?.maxScale || 2.0,
-      prepTime: meal?.prepTime || 0,
-      difficulty: meal?.difficulty || "easy",
-      cultural: meal?.cultural || [],
-      tags: meal?.tags || [],
-      isActive: meal?.isActive ?? true,
+      name: "",
+      mealArabicName: "",
+      mealKurdishName: "",
+      mealType: "breakfast",
+      foods: [],
+      baseCalories: 0,
+      baseProtein: 0,
+      baseCarbs: 0,
+      baseFat: 0,
+      minScale: 0.5,
+      maxScale: 2.0,
+      prepTime: 0,
+      difficulty: "easy",
+      cultural: [],
+      tags: [],
+      isActive: true,
     },
   });
+
+  // Reset form when meal changes
+  useEffect(() => {
+    if (meal) {
+      form.reset({
+        name: meal.name || "",
+        mealArabicName: meal.mealArabicName || "",
+        mealKurdishName: meal.mealKurdishName || "",
+        mealType: meal.mealType || "breakfast",
+        foods: meal.foods || [],
+        baseCalories: meal.baseCalories || 0,
+        baseProtein: meal.baseProtein || 0,
+        baseCarbs: meal.baseCarbs || 0,
+        baseFat: meal.baseFat || 0,
+        minScale: meal.minScale || 0.5,
+        maxScale: meal.maxScale || 2.0,
+        prepTime: meal.prepTime || 0,
+        difficulty: meal.difficulty || "easy",
+        cultural: meal.cultural || [],
+        tags: meal.tags || [],
+        isActive: meal.isActive ?? true,
+      });
+    } else {
+      form.reset({
+        name: "",
+        mealArabicName: "",
+        mealKurdishName: "",
+        mealType: "breakfast",
+        foods: [],
+        baseCalories: 0,
+        baseProtein: 0,
+        baseCarbs: 0,
+        baseFat: 0,
+        minScale: 0.5,
+        maxScale: 2.0,
+        prepTime: 0,
+        difficulty: "easy",
+        cultural: [],
+        tags: [],
+        isActive: true,
+      });
+    }
+  }, [meal, form]);
 
   const handleSubmit = (data: InsertMeal) => {
     onSubmit({
@@ -107,9 +163,6 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
       setSelectedFoodId("");
       setNewFoodPortion("");
       setFoodSearch("");
-      
-      // Update nutrition values after adding food
-      setTimeout(() => updateNutritionValues(), 0);
     }
   };
 
@@ -117,9 +170,6 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
   const removeFoodFromMeal = (index: number) => {
     const updatedFoods = mealFoods.filter((_, i) => i !== index);
     setMealFoods(updatedFoods);
-    
-    // Update nutrition values after removing food
-    setTimeout(() => updateNutritionValues(), 0);
   };
 
   // Get food name by ID
@@ -170,7 +220,9 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
 
   // Recalculate nutrition when foods change
   useEffect(() => {
-    updateNutritionValues();
+    if (foods.length > 0) {
+      updateNutritionValues();
+    }
   }, [mealFoods, foods]);
 
   const addTag = () => {
