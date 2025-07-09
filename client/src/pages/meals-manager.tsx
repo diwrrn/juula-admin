@@ -351,7 +351,10 @@ export default function MealsManager() {
             </Button>
             <Button 
               className="bg-primary hover:bg-blue-700"
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => {
+                setEditingMeal(null);
+                setIsAddModalOpen(true);
+              }}
             >
               <Plus className="h-4 w-4 mr-2" />
               Add New Meal

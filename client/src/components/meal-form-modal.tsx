@@ -50,6 +50,12 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
       setTags([]);
       setMealFoods([]);
     }
+    // Reset search states
+    setFoodSearch("");
+    setSelectedFoodId("");
+    setNewFoodPortion("");
+    setNewFoodRole("protein_primary");
+    setNewTag("");
   }, [meal]);
 
   // Fetch foods from Firestore
@@ -132,6 +138,8 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
         isActive: true,
       });
     }
+    // Clear form validation errors
+    form.clearErrors();
   }, [meal, form]);
 
   const handleSubmit = (data: InsertMeal) => {
