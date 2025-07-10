@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, Plus, Search, Trash2 } from "lucide-react";
+import { X, Plus, Search, Trash2, Edit, Check } from "lucide-react";
 
 interface MealFormModalProps {
   isOpen: boolean;
@@ -40,6 +40,7 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
   const [newFoodPortion, setNewFoodPortion] = useState("");
   const [newFoodRole, setNewFoodRole] = useState<"protein_primary" | "carb_primary" | "fat_primary" | "filler">("protein_primary");
   const [newAllowedPortions, setNewAllowedPortions] = useState("");
+  const [editingPortions, setEditingPortions] = useState<{ [key: number]: string }>({});
 
   // Initialize form data when meal prop changes or modal opens
   useEffect(() => {
@@ -62,6 +63,7 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
       setNewFoodRole("protein_primary");
       setNewAllowedPortions("");
       setNewTag("");
+      setEditingPortions({});
     }
   }, [meal, isOpen]);
 
@@ -260,6 +262,43 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
 
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  // Start editing allowed portions for a specific meal food
+  const startEditingPortions = (index: number) => {
+    const currentPortions = mealFoods[index].allowedPortions || [];
+    setEditingPortions({
+      ...editingPortions,
+      [index]: currentPortions.join(', ')
+    });
+  };
+
+  // Save edited allowed portions
+  const saveEditedPortions = (index: number) => {
+    const portionsText = editingPortions[index] || '';
+    const allowedPortions = portionsText
+      .split(',')
+      .map(p => parseFloat(p.trim()))
+      .filter(p => !isNaN(p) && p > 0);
+    
+    const updatedFoods = [...mealFoods];
+    updatedFoods[index] = {
+      ...updatedFoods[index],
+      allowedPortions: allowedPortions.length > 0 ? allowedPortions : undefined,
+    };
+    setMealFoods(updatedFoods);
+    
+    // Clear editing state
+    const newEditingPortions = { ...editingPortions };
+    delete newEditingPortions[index];
+    setEditingPortions(newEditingPortions);
+  };
+
+  // Cancel editing allowed portions
+  const cancelEditingPortions = (index: number) => {
+    const newEditingPortions = { ...editingPortions };
+    delete newEditingPortions[index];
+    setEditingPortions(newEditingPortions);
   };
 
   const toggleCulture = (culture: string) => {
@@ -567,7 +606,7 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                     return (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        className="flex items-start justify-between p-3 bg-gray-50 rounded-lg"
                       >
                         <div className="flex-1">
                           <div className="font-medium">{getFoodName(mealFood.foodId)}</div>
@@ -577,9 +616,55 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                           <div className="text-xs text-gray-400">
                             Contributes: {calories} cal, {protein}g protein
                           </div>
-                          {mealFood.allowedPortions && mealFood.allowedPortions.length > 0 && (
-                            <div className="text-xs text-blue-600 mt-1">
-                              Allowed portions: {mealFood.allowedPortions.join(', ')}g
+                          
+                          {/* Allowed Portions - Show inline editor if editing, otherwise show current values */}
+                          {editingPortions[index] !== undefined ? (
+                            <div className="mt-2 flex items-center space-x-2">
+                              <Input
+                                value={editingPortions[index]}
+                                onChange={(e) => setEditingPortions({
+                                  ...editingPortions,
+                                  [index]: e.target.value
+                                })}
+                                placeholder="e.g., 120, 190, 250"
+                                className="h-8 text-xs"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => saveEditedPortions(index)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => cancelEditingPortions(index)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between mt-1">
+                              <div className="text-xs text-blue-600">
+                                Allowed portions: {mealFood.allowedPortions && mealFood.allowedPortions.length > 0 
+                                  ? mealFood.allowedPortions.join(', ') + 'g' 
+                                  : 'None set'
+                                }
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => startEditingPortions(index)}
+                                className="h-6 w-6 p-0 ml-2"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
                             </div>
                           )}
                         </div>
@@ -588,6 +673,7 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFoodFromMeal(index)}
+                          className="ml-2"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
