@@ -54,14 +54,14 @@ export default function WorkoutPlans() {
   const { data: subcategories = [], isLoading: subcategoriesLoading } = useQuery({
     queryKey: ["/api/workout-subcategories", selectedCategoryId],
     queryFn: () => getWorkoutSubcategories(selectedCategoryId),
-    enabled: !!selectedCategoryId,
+    enabled: Boolean(selectedCategoryId),
   });
 
   // Fetch exercises for selected category/subcategory
   const { data: exercises = [], isLoading: exercisesLoading } = useQuery({
     queryKey: ["/api/exercises", selectedCategoryId, selectedSubcategoryId],
     queryFn: () => getExercises(selectedCategoryId, selectedSubcategoryId),
-    enabled: !!selectedCategoryId && (view === "exercises" || selectedSubcategoryId),
+    enabled: Boolean(selectedCategoryId && (view === "exercises" || selectedSubcategoryId)),
   });
 
   // Create category mutation
