@@ -1,25 +1,26 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertWorkoutCategorySchema, type InsertWorkoutCategory, type WorkoutCategory } from "@shared/schema";
+import { insertWorkoutSubcategorySchema, type InsertWorkoutSubcategory, type WorkoutSubcategory } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
-interface WorkoutCategoryFormModalProps {
+interface WorkoutSubcategoryFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  category?: WorkoutCategory | null;
-  onSubmit: (data: InsertWorkoutCategory) => void;
+  subcategory?: WorkoutSubcategory | null;
+  categoryId: string;
+  onSubmit: (data: InsertWorkoutSubcategory) => void;
   isLoading: boolean;
 }
 
-export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, isLoading }: WorkoutCategoryFormModalProps) {
-  const form = useForm<InsertWorkoutCategory>({
-    resolver: zodResolver(insertWorkoutCategorySchema),
+export function WorkoutSubcategoryFormModal({ isOpen, onClose, subcategory, categoryId, onSubmit, isLoading }: WorkoutSubcategoryFormModalProps) {
+  const form = useForm<InsertWorkoutSubcategory>({
+    resolver: zodResolver(insertWorkoutSubcategorySchema),
     defaultValues: {
+      categoryId: categoryId,
       name: "",
       nameKurdish: "",
       nameArabic: "",
@@ -28,19 +29,21 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
     },
   });
 
-  // Reset form when category changes or modal opens
+  // Reset form when subcategory changes or modal opens
   useEffect(() => {
     if (isOpen) {
-      if (category) {
+      if (subcategory) {
         form.reset({
-          name: category.name || "",
-          nameKurdish: category.nameKurdish || "",
-          nameArabic: category.nameArabic || "",
-          iconUrl: category.iconUrl || "",
-          order: category.order || 1,
+          categoryId: subcategory.categoryId || categoryId,
+          name: subcategory.name || "",
+          nameKurdish: subcategory.nameKurdish || "",
+          nameArabic: subcategory.nameArabic || "",
+          iconUrl: subcategory.iconUrl || "",
+          order: subcategory.order || 1,
         });
       } else {
         form.reset({
+          categoryId: categoryId,
           name: "",
           nameKurdish: "",
           nameArabic: "",
@@ -51,9 +54,9 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
       // Clear form validation errors
       form.clearErrors();
     }
-  }, [category, form, isOpen]);
+  }, [subcategory, categoryId, form, isOpen]);
 
-  const handleSubmit = (data: InsertWorkoutCategory) => {
+  const handleSubmit = (data: InsertWorkoutSubcategory) => {
     onSubmit(data);
   };
 
@@ -62,7 +65,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {category ? "Edit Workout Category" : "Create New Workout Category"}
+            {subcategory ? "Edit Workout Subcategory" : "Create New Workout Subcategory"}
           </DialogTitle>
         </DialogHeader>
 
@@ -73,16 +76,16 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category Name (English)</FormLabel>
+                  <FormLabel>Subcategory Name (English)</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="e.g., Chest, Back, Legs"
+                      placeholder="e.g., Upper Back, Lower Back"
                       className="w-full"
                     />
                   </FormControl>
                   <FormDescription>
-                    The English name of the workout category
+                    The English name of the workout subcategory
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -94,7 +97,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
               name="nameKurdish"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category Name (Kurdish)</FormLabel>
+                  <FormLabel>Subcategory Name (Kurdish)</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -103,7 +106,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
                     />
                   </FormControl>
                   <FormDescription>
-                    The Kurdish name of the workout category (optional)
+                    The Kurdish name of the workout subcategory (optional)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -115,7 +118,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
               name="nameArabic"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category Name (Arabic)</FormLabel>
+                  <FormLabel>Subcategory Name (Arabic)</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -124,7 +127,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
                     />
                   </FormControl>
                   <FormDescription>
-                    The Arabic name of the workout category (optional)
+                    The Arabic name of the workout subcategory (optional)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -145,7 +148,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
                     />
                   </FormControl>
                   <FormDescription>
-                    URL to an icon image for this category
+                    URL to an icon image for this subcategory
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -169,7 +172,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
                     />
                   </FormControl>
                   <FormDescription>
-                    Display order for this category (lower numbers appear first)
+                    Display order for this subcategory (lower numbers appear first)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -181,7 +184,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Saving..." : category ? "Update Category" : "Create Category"}
+                {isLoading ? "Saving..." : subcategory ? "Update Subcategory" : "Create Subcategory"}
               </Button>
             </div>
           </form>

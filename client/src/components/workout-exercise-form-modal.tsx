@@ -24,10 +24,13 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
     resolver: zodResolver(insertExerciseSchema),
     defaultValues: {
       name: "",
+      nameKurdish: "",
+      nameArabic: "",
       description: "",
       videoUrl: "",
       thumbnailUrl: "",
       muscleGroups: [],
+      bodyTarget: "",
       difficulty: "beginner",
       equipment: "bodyweight",
       order: 1,
@@ -45,10 +48,13 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
       if (exercise) {
         form.reset({
           name: exercise.name || "",
+          nameKurdish: exercise.nameKurdish || "",
+          nameArabic: exercise.nameArabic || "",
           description: exercise.description || "",
           videoUrl: exercise.videoUrl || "",
           thumbnailUrl: exercise.thumbnailUrl || "",
           muscleGroups: exercise.muscleGroups || [],
+          bodyTarget: exercise.bodyTarget || "",
           difficulty: exercise.difficulty || "beginner",
           equipment: exercise.equipment || "bodyweight",
           order: exercise.order || 1,
@@ -56,10 +62,13 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
       } else {
         form.reset({
           name: "",
+          nameKurdish: "",
+          nameArabic: "",
           description: "",
           videoUrl: "",
           thumbnailUrl: "",
           muscleGroups: [],
+          bodyTarget: "",
           difficulty: "beginner",
           equipment: "bodyweight",
           order: 1,
@@ -98,7 +107,7 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Exercise Name</FormLabel>
+                  <FormLabel>Exercise Name (English)</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -107,7 +116,49 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
                     />
                   </FormControl>
                   <FormDescription>
-                    The name of the exercise
+                    The English name of the exercise
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="nameKurdish"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Exercise Name (Kurdish)</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Kurdish name"
+                      className="w-full"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    The Kurdish name of the exercise (optional)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="nameArabic"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Exercise Name (Arabic)</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Arabic name"
+                      className="w-full"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    The Arabic name of the exercise (optional)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -178,6 +229,27 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="bodyTarget"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Body Target</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="e.g., Upper body, Lower body, Core"
+                      className="w-full"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Target body area for this exercise
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField

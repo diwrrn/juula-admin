@@ -9,18 +9,36 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Search, Edit, Trash2, Dumbbell, Users, Clock, FolderOpen, Target, ArrowLeft, Play } from "lucide-react";
 import { Link } from "wouter";
-import type { WorkoutCategory, Exercise, InsertWorkoutCategory, InsertExercise } from "@shared/schema";
+import type { WorkoutCategory, WorkoutSubcategory, Exercise, InsertWorkoutCategory, InsertWorkoutSubcategory, InsertExercise } from "@shared/schema";
 import { WorkoutCategoryFormModal } from "@/components/workout-category-form-modal";
+import { WorkoutSubcategoryFormModal } from "@/components/workout-subcategory-form-modal";
 import { WorkoutExerciseFormModal } from "@/components/workout-exercise-form-modal";
+import { 
+  getWorkoutCategories, 
+  getWorkoutSubcategories, 
+  getExercises, 
+  createWorkoutCategory, 
+  createWorkoutSubcategory, 
+  createExercise,
+  updateWorkoutCategory,
+  updateWorkoutSubcategory,
+  updateExercise,
+  deleteWorkoutCategory,
+  deleteWorkoutSubcategory,
+  deleteExercise
+} from "@/lib/firebase";
 
 export default function WorkoutPlans() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [view, setView] = useState<"categories" | "exercises">("categories");
+  const [view, setView] = useState<"categories" | "subcategories" | "exercises">("categories");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>("");
   const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
+  const [isSubcategoryFormOpen, setIsSubcategoryFormOpen] = useState(false);
   const [isExerciseFormOpen, setIsExerciseFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<WorkoutCategory | null>(null);
+  const [editingSubcategory, setEditingSubcategory] = useState<WorkoutSubcategory | null>(null);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const pageSize = 12;
   const { toast } = useToast();
@@ -29,46 +47,36 @@ export default function WorkoutPlans() {
   // Fetch workout categories
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ["/api/workout-categories"],
-    queryFn: async () => {
-      const categoriesCollection = collection(db, "workoutCategories");
-      const q = firestoreQuery(categoriesCollection, orderBy("order"));
-      const snapshot = await getDocs(q);
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as WorkoutCategory[];
-    },
+    queryFn: () => getWorkoutCategories(),
   });
 
-  // Fetch exercises for selected category
+  // Fetch subcategories for selected category
+  const { data: subcategories = [], isLoading: subcategoriesLoading } = useQuery({
+    queryKey: ["/api/workout-subcategories", selectedCategoryId],
+    queryFn: () => getWorkoutSubcategories(selectedCategoryId),
+    enabled: !!selectedCategoryId,
+  });
+
+  // Fetch exercises for selected category/subcategory
   const { data: exercises = [], isLoading: exercisesLoading } = useQuery({
-    queryKey: ["/api/exercises", selectedCategoryId],
-    queryFn: async () => {
-      if (!selectedCategoryId) return [];
-      
-      const exercisesCollection = collection(db, "workoutCategories", selectedCategoryId, "exercises");
-      const q = firestoreQuery(exercisesCollection, orderBy("order"));
-      const snapshot = await getDocs(q);
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        categoryId: selectedCategoryId,
-        ...doc.data(),
-      })) as Exercise[];
-    },
-    enabled: !!selectedCategoryId && view === "exercises",
+    queryKey: ["/api/exercises", selectedCategoryId, selectedSubcategoryId],
+    queryFn: () => getExercises(selectedCategoryId, selectedSubcategoryId),
+    enabled: !!selectedCategoryId && (view === "exercises" || selectedSubcategoryId),
   });
 
   // Create category mutation
   const createCategoryMutation = useMutation({
     mutationFn: async (data: InsertWorkoutCategory) => {
-      await addDoc(collection(db, "workoutCategories"), data);
+      if (editingCategory) {
+        await updateWorkoutCategory(editingCategory.id, data);
+      } else {
+        await createWorkoutCategory(data);
+      }
     },
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Workout category created successfully",
+        description: `Workout category ${editingCategory ? 'updated' : 'created'} successfully`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/workout-categories"] });
       setIsCategoryFormOpen(false);
@@ -83,33 +91,10 @@ export default function WorkoutPlans() {
     },
   });
 
-  // Update category mutation
-  const updateCategoryMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: InsertWorkoutCategory }) => {
-      await updateDoc(doc(db, "workoutCategories", id), data);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Workout category updated successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/workout-categories"] });
-      setIsCategoryFormOpen(false);
-      setEditingCategory(null);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to update category: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
     mutationFn: async (categoryId: string) => {
-      await deleteDoc(doc(db, "workoutCategories", categoryId));
+      await deleteWorkoutCategory(categoryId);
     },
     onSuccess: () => {
       toast({
@@ -127,17 +112,69 @@ export default function WorkoutPlans() {
     },
   });
 
-  // Create exercise mutation
-  const createExerciseMutation = useMutation({
-    mutationFn: async (data: InsertExercise) => {
-      await addDoc(collection(db, "workoutCategories", selectedCategoryId, "exercises"), data);
+  // Create/Update subcategory mutation
+  const createSubcategoryMutation = useMutation({
+    mutationFn: async (data: InsertWorkoutSubcategory) => {
+      if (editingSubcategory) {
+        await updateWorkoutSubcategory(selectedCategoryId, editingSubcategory.id, data);
+      } else {
+        await createWorkoutSubcategory(selectedCategoryId, data);
+      }
     },
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Exercise created successfully",
+        description: `Workout subcategory ${editingSubcategory ? 'updated' : 'created'} successfully`,
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/exercises", selectedCategoryId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/workout-subcategories", selectedCategoryId] });
+      setIsSubcategoryFormOpen(false);
+      setEditingSubcategory(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to ${editingSubcategory ? 'update' : 'create'} subcategory: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete subcategory mutation
+  const deleteSubcategoryMutation = useMutation({
+    mutationFn: async (subcategoryId: string) => {
+      await deleteWorkoutSubcategory(selectedCategoryId, subcategoryId);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Workout subcategory deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/workout-subcategories", selectedCategoryId] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete subcategory: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create/Update exercise mutation
+  const createExerciseMutation = useMutation({
+    mutationFn: async (data: InsertExercise) => {
+      if (editingExercise) {
+        await updateExercise(selectedCategoryId, selectedSubcategoryId, editingExercise.id, data);
+      } else {
+        await createExercise(selectedCategoryId, selectedSubcategoryId, data);
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: `Exercise ${editingExercise ? 'updated' : 'created'} successfully`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/exercises", selectedCategoryId, selectedSubcategoryId] });
       setIsExerciseFormOpen(false);
       setEditingExercise(null);
     },
@@ -150,40 +187,17 @@ export default function WorkoutPlans() {
     },
   });
 
-  // Update exercise mutation
-  const updateExerciseMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: InsertExercise }) => {
-      await updateDoc(doc(db, "workoutCategories", selectedCategoryId, "exercises", id), data);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Exercise updated successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/exercises", selectedCategoryId] });
-      setIsExerciseFormOpen(false);
-      setEditingExercise(null);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to update exercise: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
   // Delete exercise mutation
   const deleteExerciseMutation = useMutation({
     mutationFn: async (exerciseId: string) => {
-      await deleteDoc(doc(db, "workoutCategories", selectedCategoryId, "exercises", exerciseId));
+      await deleteExercise(selectedCategoryId, selectedSubcategoryId, exerciseId);
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Exercise deleted successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/exercises", selectedCategoryId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/exercises", selectedCategoryId, selectedSubcategoryId] });
     },
     onError: (error) => {
       toast({
@@ -199,6 +213,11 @@ export default function WorkoutPlans() {
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Filter subcategories
+  const filteredSubcategories = subcategories.filter(subcategory =>
+    subcategory.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   // Filter exercises
   const filteredExercises = exercises.filter(exercise =>
     exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -207,10 +226,14 @@ export default function WorkoutPlans() {
   // Pagination
   const totalPages = view === "categories" 
     ? Math.ceil(filteredCategories.length / pageSize)
+    : view === "subcategories"
+    ? Math.ceil(filteredSubcategories.length / pageSize)
     : Math.ceil(filteredExercises.length / pageSize);
   
   const paginatedItems = view === "categories"
     ? filteredCategories.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    : view === "subcategories"
+    ? filteredSubcategories.slice((currentPage - 1) * pageSize, currentPage * pageSize)
     : filteredExercises.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Modal handlers
@@ -225,11 +248,7 @@ export default function WorkoutPlans() {
   };
 
   const handleCategoryFormSubmit = (data: InsertWorkoutCategory) => {
-    if (editingCategory) {
-      updateCategoryMutation.mutate({ id: editingCategory.id, data });
-    } else {
-      createCategoryMutation.mutate(data);
-    }
+    createCategoryMutation.mutate(data);
   };
 
   const handleCreateExercise = () => {
@@ -242,16 +261,33 @@ export default function WorkoutPlans() {
     setIsExerciseFormOpen(true);
   };
 
+  const handleCreateSubcategory = () => {
+    setEditingSubcategory(null);
+    setIsSubcategoryFormOpen(true);
+  };
+
+  const handleEditSubcategory = (subcategory: WorkoutSubcategory) => {
+    setEditingSubcategory(subcategory);
+    setIsSubcategoryFormOpen(true);
+  };
+
+  const handleSubcategoryFormSubmit = (data: InsertWorkoutSubcategory) => {
+    createSubcategoryMutation.mutate(data);
+  };
+
   const handleExerciseFormSubmit = (data: InsertExercise) => {
-    if (editingExercise) {
-      updateExerciseMutation.mutate({ id: editingExercise.id, data });
-    } else {
-      createExerciseMutation.mutate(data);
-    }
+    createExerciseMutation.mutate(data);
   };
 
   const handleViewCategory = (categoryId: string) => {
     setSelectedCategoryId(categoryId);
+    setView("subcategories");
+    setCurrentPage(1);
+    setSearchTerm("");
+  };
+
+  const handleViewSubcategory = (subcategoryId: string) => {
+    setSelectedSubcategoryId(subcategoryId);
     setView("exercises");
     setCurrentPage(1);
     setSearchTerm("");
@@ -260,6 +296,14 @@ export default function WorkoutPlans() {
   const handleBackToCategories = () => {
     setView("categories");
     setSelectedCategoryId("");
+    setSelectedSubcategoryId("");
+    setCurrentPage(1);
+    setSearchTerm("");
+  };
+
+  const handleBackToSubcategories = () => {
+    setView("subcategories");
+    setSelectedSubcategoryId("");
     setCurrentPage(1);
     setSearchTerm("");
   };
@@ -306,7 +350,7 @@ export default function WorkoutPlans() {
 
       <div className="pt-20 px-6">
         {/* Breadcrumb and Back Button */}
-        {view === "exercises" && (
+        {view === "subcategories" && (
           <div className="mb-4 flex items-center space-x-2">
             <Button variant="ghost" size="sm" onClick={handleBackToCategories}>
               <ArrowLeft className="h-4 w-4 mr-1" />
@@ -317,13 +361,30 @@ export default function WorkoutPlans() {
           </div>
         )}
 
+        {view === "exercises" && (
+          <div className="mb-4 flex items-center space-x-2">
+            <Button variant="ghost" size="sm" onClick={handleBackToSubcategories}>
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to Subcategories
+            </Button>
+            <span className="text-gray-400">/</span>
+            <span className="text-gray-700">{selectedCategory?.name}</span>
+            <span className="text-gray-400">/</span>
+            <span className="text-gray-700">{subcategories.find(s => s.id === selectedSubcategoryId)?.name}</span>
+          </div>
+        )}
+
         {/* Controls */}
         <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder={view === "categories" ? "Search categories..." : "Search exercises..."}
+                placeholder={
+                  view === "categories" ? "Search categories..." : 
+                  view === "subcategories" ? "Search subcategories..." :
+                  "Search exercises..."
+                }
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-64"
@@ -332,9 +393,15 @@ export default function WorkoutPlans() {
           </div>
 
           <div className="flex items-center space-x-3">
-            <Button onClick={view === "categories" ? handleCreateCategory : handleCreateExercise}>
+            <Button onClick={
+              view === "categories" ? handleCreateCategory : 
+              view === "subcategories" ? handleCreateSubcategory :
+              handleCreateExercise
+            }>
               <Plus className="h-4 w-4 mr-2" />
-              {view === "categories" ? "Create Category" : "Create Exercise"}
+              {view === "categories" ? "Create Category" : 
+               view === "subcategories" ? "Create Subcategory" :
+               "Create Exercise"}
             </Button>
           </div>
         </div>
@@ -370,10 +437,14 @@ export default function WorkoutPlans() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">
-                    {view === "categories" ? "Showing" : "In Category"}
+                    {view === "categories" ? "Showing" : 
+                     view === "subcategories" ? "In Category" : 
+                     "In Subcategory"}
                   </p>
                   <p className="text-2xl font-bold">
-                    {view === "categories" ? filteredCategories.length : filteredExercises.length}
+                    {view === "categories" ? filteredCategories.length : 
+                     view === "subcategories" ? filteredSubcategories.length :
+                     filteredExercises.length}
                   </p>
                 </div>
                 <Play className="h-8 w-8 text-purple-500" />
@@ -383,14 +454,18 @@ export default function WorkoutPlans() {
         </div>
 
         {/* Content */}
-        {(view === "categories" && categoriesLoading) || (view === "exercises" && exercisesLoading) ? (
+        {(view === "categories" && categoriesLoading) || 
+         (view === "subcategories" && subcategoriesLoading) || 
+         (view === "exercises" && exercisesLoading) ? (
           <div className="text-center py-12">
             <div className="text-gray-500">Loading...</div>
           </div>
         ) : paginatedItems.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-500">
-              {view === "categories" ? "No categories found" : "No exercises found"}
+              {view === "categories" ? "No categories found" : 
+               view === "subcategories" ? "No subcategories found" :
+               "No exercises found"}
             </div>
           </div>
         ) : (
@@ -443,10 +518,68 @@ export default function WorkoutPlans() {
                           onClick={() => handleViewCategory(category.id)}
                         >
                           <FolderOpen className="h-3 w-3 mr-1" />
-                          View Exercises
+                          View Subcategories
                         </Button>
                         <Badge variant="secondary" className="text-xs">
                           {category.exerciseCount || 0} exercises
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : view === "subcategories" ? (
+              // Subcategories view
+              (paginatedItems as WorkoutSubcategory[]).map((subcategory) => (
+                <Card key={subcategory.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg font-semibold text-gray-900 mb-1">
+                          {subcategory.name}
+                        </CardTitle>
+                        <p className="text-sm text-gray-600">
+                          Order: {subcategory.order}
+                        </p>
+                      </div>
+                      <div className="flex space-x-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEditSubcategory(subcategory)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => deleteSubcategoryMutation.mutate(subcategory.id)}
+                          disabled={deleteSubcategoryMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="space-y-3">
+                      {subcategory.iconUrl && (
+                        <div className="text-sm text-gray-600">
+                          <p><span className="font-medium">Icon URL:</span> {subcategory.iconUrl}</p>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-center">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleViewSubcategory(subcategory.id)}
+                        >
+                          <FolderOpen className="h-3 w-3 mr-1" />
+                          View Exercises
+                        </Button>
+                        <Badge variant="secondary" className="text-xs">
+                          {subcategory.exerciseCount || 0} exercises
                         </Badge>
                       </div>
                     </div>
@@ -466,6 +599,11 @@ export default function WorkoutPlans() {
                         <p className="text-sm text-gray-600">
                           {exercise.difficulty} • {exercise.equipment}
                         </p>
+                        {exercise.bodyTarget && (
+                          <p className="text-xs text-gray-500">
+                            Target: {exercise.bodyTarget}
+                          </p>
+                        )}
                       </div>
                       <div className="flex space-x-1">
                         <Button 
@@ -554,7 +692,20 @@ export default function WorkoutPlans() {
         }}
         category={editingCategory}
         onSubmit={handleCategoryFormSubmit}
-        isLoading={createCategoryMutation.isPending || updateCategoryMutation.isPending}
+        isLoading={createCategoryMutation.isPending}
+      />
+
+      {/* Subcategory Form Modal */}
+      <WorkoutSubcategoryFormModal
+        isOpen={isSubcategoryFormOpen}
+        onClose={() => {
+          setIsSubcategoryFormOpen(false);
+          setEditingSubcategory(null);
+        }}
+        subcategory={editingSubcategory}
+        categoryId={selectedCategoryId}
+        onSubmit={handleSubcategoryFormSubmit}
+        isLoading={createSubcategoryMutation.isPending}
       />
 
       {/* Exercise Form Modal */}
@@ -566,7 +717,7 @@ export default function WorkoutPlans() {
         }}
         exercise={editingExercise}
         onSubmit={handleExerciseFormSubmit}
-        isLoading={createExerciseMutation.isPending || updateExerciseMutation.isPending}
+        isLoading={createExerciseMutation.isPending}
       />
     </div>
   );
