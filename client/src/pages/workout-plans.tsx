@@ -10,12 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Search, Edit, Trash2, Dumbbell, Play, Users, Clock } from "lucide-react";
 import { Link } from "wouter";
-import type { WorkoutPlan, WorkoutCategory, Exercise } from "@shared/schema";
+import type { WorkoutPlan, WorkoutCategory, Exercise, InsertWorkoutPlan } from "@shared/schema";
+import { WorkoutPlanFormModal } from "@/components/workout-plan-form-modal";
 
 export default function WorkoutPlans() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [editingWorkoutPlan, setEditingWorkoutPlan] = useState<WorkoutPlan | null>(null);
   const pageSize = 8;
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -72,6 +75,61 @@ export default function WorkoutPlans() {
       return allExercises;
     },
     enabled: categories.length > 0,
+  });
+
+  // Create workout plan mutation
+  const createPlanMutation = useMutation({
+    mutationFn: async (data: InsertWorkoutPlan) => {
+      const planData = {
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      await addDoc(collection(db, "users", "demo-user", "workoutPlans"), planData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Workout plan created successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/workout-plans"] });
+      setIsFormModalOpen(false);
+      setEditingWorkoutPlan(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create workout plan: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update workout plan mutation
+  const updatePlanMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: InsertWorkoutPlan }) => {
+      const planData = {
+        ...data,
+        updatedAt: new Date(),
+      };
+      await updateDoc(doc(db, "users", "demo-user", "workoutPlans", id), planData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Workout plan updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/workout-plans"] });
+      setIsFormModalOpen(false);
+      setEditingWorkoutPlan(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update workout plan: ${error.message}`,
+        variant: "destructive",
+      });
+    },
   });
 
   // Delete workout plan mutation
@@ -229,6 +287,30 @@ export default function WorkoutPlans() {
     });
   };
 
+  // Modal handlers
+  const handleCreatePlan = () => {
+    setEditingWorkoutPlan(null);
+    setIsFormModalOpen(true);
+  };
+
+  const handleEditPlan = (plan: WorkoutPlan) => {
+    setEditingWorkoutPlan(plan);
+    setIsFormModalOpen(true);
+  };
+
+  const handleFormSubmit = (data: InsertWorkoutPlan) => {
+    if (editingWorkoutPlan) {
+      updatePlanMutation.mutate({ id: editingWorkoutPlan.id, data });
+    } else {
+      createPlanMutation.mutate(data);
+    }
+  };
+
+  const handleModalClose = () => {
+    setIsFormModalOpen(false);
+    setEditingWorkoutPlan(null);
+  };
+
   if (plansError) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -301,7 +383,7 @@ export default function WorkoutPlans() {
             >
               {addSampleDataMutation.isPending ? "Adding..." : "Add Sample Data"}
             </Button>
-            <Button className="bg-primary hover:bg-blue-700">
+            <Button onClick={handleCreatePlan} className="bg-primary hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />
               Create New Plan
             </Button>
@@ -367,7 +449,11 @@ export default function WorkoutPlans() {
                         </p>
                       </div>
                       <div className="flex space-x-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEditPlan(plan)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button 
@@ -442,6 +528,15 @@ export default function WorkoutPlans() {
           </div>
         )}
       </div>
+
+      {/* Workout Plan Form Modal */}
+      <WorkoutPlanFormModal
+        isOpen={isFormModalOpen}
+        onClose={handleModalClose}
+        workoutPlan={editingWorkoutPlan}
+        onSubmit={handleFormSubmit}
+        isLoading={createPlanMutation.isPending || updatePlanMutation.isPending}
+      />
     </div>
   );
 }
