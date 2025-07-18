@@ -28,7 +28,7 @@ const formSchema = insertWorkoutPlanSchema;
 export function WorkoutPlanFormModal({ isOpen, onClose, workoutPlan, onSubmit, isLoading }: WorkoutPlanFormModalProps) {
   const [planExercises, setPlanExercises] = useState<WorkoutPlanExercise[]>([]);
   const [exerciseSearch, setExerciseSearch] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("all");
   const [selectedExerciseId, setSelectedExerciseId] = useState("");
   const [newSets, setNewSets] = useState("");
   const [newReps, setNewReps] = useState("");
@@ -82,7 +82,7 @@ export function WorkoutPlanFormModal({ isOpen, onClose, workoutPlan, onSubmit, i
       }
       // Reset form states
       setExerciseSearch("");
-      setSelectedCategoryId("");
+      setSelectedCategoryId("all");
       setSelectedExerciseId("");
       setNewSets("");
       setNewReps("");
@@ -130,7 +130,7 @@ export function WorkoutPlanFormModal({ isOpen, onClose, workoutPlan, onSubmit, i
   // Filter exercises based on search and category
   const filteredExercises = exercises.filter(exercise => {
     const matchesSearch = exercise.name.toLowerCase().includes(exerciseSearch.toLowerCase());
-    const matchesCategory = selectedCategoryId === "" || exercise.categoryId === selectedCategoryId;
+    const matchesCategory = selectedCategoryId === "all" || selectedCategoryId === "" || exercise.categoryId === selectedCategoryId;
     return matchesSearch && matchesCategory;
   });
 
@@ -153,6 +153,7 @@ export function WorkoutPlanFormModal({ isOpen, onClose, workoutPlan, onSubmit, i
         setNewReps("");
         setNewNotes("");
         setExerciseSearch("");
+        setSelectedCategoryId("all");
       }
     }
   };
@@ -218,7 +219,7 @@ export function WorkoutPlanFormModal({ isOpen, onClose, workoutPlan, onSubmit, i
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Categories</SelectItem>
+                      <SelectItem value="all">All Categories</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           {category.name}
