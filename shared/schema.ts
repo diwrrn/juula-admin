@@ -319,3 +319,78 @@ export const insertMealSchema = mealSchema.omit({
 export type Meal = z.infer<typeof mealSchema>;
 export type InsertMeal = z.infer<typeof insertMealSchema>;
 export type MealFood = z.infer<typeof mealFoodSchema>;
+
+// Workout Schema
+export const workoutCategorySchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Category name is required"),
+  iconUrl: z.string().optional(),
+  order: z.number().min(1)
+});
+
+export const exerciseSchema = z.object({
+  id: z.string(),
+  categoryId: z.string(),
+  name: z.string().min(1, "Exercise name is required"),
+  description: z.string().optional(),
+  videoUrl: z.string().optional(),
+  thumbnailUrl: z.string().optional(),
+  muscleGroups: z.array(z.string()),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+  equipment: z.string().optional(),
+  order: z.number().min(1)
+});
+
+export const workoutPlanExerciseSchema = z.object({
+  exerciseId: z.string(),
+  categoryId: z.string(),
+  sets: z.number().min(1),
+  reps: z.number().min(1),
+  notes: z.string().optional(),
+  order: z.number().min(1)
+});
+
+export const workoutPlanSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  name: z.string().min(1, "Workout plan name is required"),
+  createdAt: z.date(),
+  exercises: z.array(workoutPlanExerciseSchema)
+});
+
+export const workoutSessionSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  planId: z.string(),
+  startTime: z.date(),
+  endTime: z.date().optional(),
+  completedExercises: z.array(z.string()),
+  totalTime: z.number().min(0)
+});
+
+export const insertWorkoutCategorySchema = workoutCategorySchema.omit({
+  id: true
+});
+
+export const insertExerciseSchema = exerciseSchema.omit({
+  id: true
+});
+
+export const insertWorkoutPlanSchema = workoutPlanSchema.omit({
+  id: true,
+  createdAt: true
+});
+
+export const insertWorkoutSessionSchema = workoutSessionSchema.omit({
+  id: true
+});
+
+export type WorkoutCategory = z.infer<typeof workoutCategorySchema>;
+export type Exercise = z.infer<typeof exerciseSchema>;
+export type WorkoutPlan = z.infer<typeof workoutPlanSchema>;
+export type WorkoutSession = z.infer<typeof workoutSessionSchema>;
+export type WorkoutPlanExercise = z.infer<typeof workoutPlanExerciseSchema>;
+export type InsertWorkoutCategory = z.infer<typeof insertWorkoutCategorySchema>;
+export type InsertExercise = z.infer<typeof insertExerciseSchema>;
+export type InsertWorkoutPlan = z.infer<typeof insertWorkoutPlanSchema>;
+export type InsertWorkoutSession = z.infer<typeof insertWorkoutSessionSchema>;

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-stack web application for managing a foods database. The application allows users to add, edit, delete, and organize food items with comprehensive nutrition information. It's built with a modern React frontend and Express.js backend, using Firebase Firestore for data persistence.
+This is a comprehensive full-stack web application for managing foods database, meals, and workout plans. The application allows users to add, edit, delete, and organize food items with comprehensive nutrition information, create detailed meal plans with multilingual support, and manage workout routines with exercise categories and plans. It's built with a modern React frontend and Express.js backend, using Firebase Firestore for data persistence.
 
 ## System Architecture
 
@@ -55,12 +55,23 @@ The application now includes a comprehensive meals system defined in `shared/sch
 - **Cultural Tags**: Support for Arabic, Kurdish, Western, Mediterranean, and Asian cuisines
 - **Metadata**: Prep time, difficulty, custom tags, and active status control
 
+### Workout Plans Data Models
+The application includes a comprehensive workout management system defined in `shared/schema.ts`:
+- **Workout Categories**: Organized exercise categories (chest, back, shoulders, arms, legs, core) with ordering and icons
+- **Exercise Database**: Complete exercise library with descriptions, video URLs, muscle groups, difficulty levels, and equipment requirements
+- **Workout Plans**: User-created workout routines with multiple exercises, sets, reps, and notes
+- **Workout Sessions**: Historical tracking of completed workouts with timing and completion status
+- **Hierarchical Structure**: Categories contain exercises, users have workout plans and session history
+- **Firebase Integration**: Nested collections following the specified database structure
+
 ### UI Components
 - **FoodsTable**: Main data grid with sorting, selection, and bulk operations
 - **FoodFormModal**: Form for adding/editing food items
 - **BulkActionsBar**: Interface for batch operations (delete, export)
 - **DeleteConfirmationModal**: Safety confirmation for deletions
 - **MealsManager**: Complete meal management interface with grid view and navigation
+- **WorkoutPlans**: Comprehensive workout management with categories, exercises, and plans
+- **Navigation**: Unified navigation between Foods, Meals, and Workout sections
 
 ### Key Features
 - **CRUD Operations**: Full create, read, update, delete functionality
@@ -131,6 +142,10 @@ The application now includes a comprehensive meals system defined in `shared/sch
 - July 9, 2025: Enhanced meal form with automatic nutrition calculation using formula: (nutritionPer100g × basePortion) ÷ 100, then summed for all foods in the meal
 - July 9, 2025: Added "Allowed Portions" field to meal foods accepting comma-separated numbers (e.g., 120, 190, 250g)
 - July 9, 2025: Updated meal types to support multiple selections (e.g., lunch and dinner) with array-based storage and badge-style UI
+- July 18, 2025: Added comprehensive workout plans system with hierarchical Firebase structure
+- July 18, 2025: Created workout categories, exercises database, and user workout plans with session tracking
+- July 18, 2025: Implemented workout plans interface with stats, filtering, and sample data initialization
+- July 18, 2025: Added unified navigation between Foods, Meals, and Workout sections
 
 ## User Preferences
 

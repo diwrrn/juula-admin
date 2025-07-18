@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Utensils, Plus, Search, Filter, Download, CheckCircle, ChefHat } from "lucide-react";
+import { Utensils, Plus, Search, Filter, Download, CheckCircle, ChefHat, Dumbbell } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -293,6 +293,12 @@ export default function FoodsManager() {
                 <Button variant="ghost" size="sm">
                   <ChefHat className="h-4 w-4 mr-1" />
                   Meals
+                </Button>
+              </Link>
+              <Link href="/workout-plans">
+                <Button variant="ghost" size="sm">
+                  <Dumbbell className="h-4 w-4 mr-1" />
+                  Workouts
                 </Button>
               </Link>
             </nav>
