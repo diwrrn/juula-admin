@@ -390,7 +390,16 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button 
+                type="button" 
+                disabled={isLoading}
+                onClick={() => {
+                  console.log("Submit button clicked");
+                  console.log("Form state:", form.formState);
+                  console.log("Form values:", form.getValues());
+                  form.handleSubmit(handleSubmit)();
+                }}
+              >
                 {isLoading ? "Saving..." : exercise ? "Update Exercise" : "Create Exercise"}
               </Button>
             </div>
