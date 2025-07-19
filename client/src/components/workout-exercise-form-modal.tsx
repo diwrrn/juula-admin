@@ -393,11 +393,24 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
               <Button 
                 type="button" 
                 disabled={isLoading}
-                onClick={() => {
+                onClick={async () => {
                   console.log("Submit button clicked");
                   console.log("Form state:", form.formState);
                   console.log("Form values:", form.getValues());
-                  form.handleSubmit(handleSubmit)();
+                  console.log("Form errors:", form.formState.errors);
+                  console.log("Form is valid:", form.formState.isValid);
+                  
+                  // Force validate the form
+                  const isValid = await form.trigger();
+                  console.log("Manual validation result:", isValid);
+                  
+                  if (isValid) {
+                    const formData = form.getValues();
+                    console.log("Calling handleSubmit with:", formData);
+                    handleSubmit(formData);
+                  } else {
+                    console.log("Form validation failed:", form.formState.errors);
+                  }
                 }}
               >
                 {isLoading ? "Saving..." : exercise ? "Update Exercise" : "Create Exercise"}
