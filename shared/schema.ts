@@ -350,11 +350,11 @@ export const exerciseSchema = z.object({
   description: z.string().optional(),
   videoUrl: z.string().optional(),
   thumbnailUrl: z.string().optional(),
-  muscleGroups: z.array(z.string()),
+  muscleGroups: z.array(z.string()).optional().default([]),
   bodyTarget: z.string().optional(),
-  difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional().default("beginner"),
   equipment: z.string().optional(),
-  order: z.number().min(1)
+  order: z.number().min(1).optional().default(1)
 });
 
 export const workoutPlanExerciseSchema = z.object({

@@ -32,7 +32,7 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
       muscleGroups: [],
       bodyTarget: "",
       difficulty: "beginner",
-      equipment: "bodyweight",
+      equipment: "",
       order: 1,
     },
   });
@@ -56,7 +56,7 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
           muscleGroups: exercise.muscleGroups || [],
           bodyTarget: exercise.bodyTarget || "",
           difficulty: exercise.difficulty || "beginner",
-          equipment: exercise.equipment || "bodyweight",
+          equipment: exercise.equipment || "",
           order: exercise.order || 1,
         });
       } else {
@@ -70,7 +70,7 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
           muscleGroups: [],
           bodyTarget: "",
           difficulty: "beginner",
-          equipment: "bodyweight",
+          equipment: "",
           order: 1,
         });
       }
@@ -80,7 +80,23 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
   }, [exercise, form, isOpen]);
 
   const handleSubmit = (data: InsertExercise) => {
-    onSubmit(data);
+    console.log("Form data:", data);
+    console.log("Form errors:", form.formState.errors);
+    console.log("Form is valid:", form.formState.isValid);
+    
+    // Debug alert
+    alert(`Form submission attempted. Valid: ${form.formState.isValid}`);
+    
+    // Clean up the data - remove empty muscle groups
+    const cleanedData = {
+      ...data,
+      muscleGroups: data.muscleGroups?.filter(group => group.trim() !== "") || [],
+      difficulty: data.difficulty || "beginner",
+      order: data.order || 1
+    };
+    
+    console.log("Cleaned data:", cleanedData);
+    onSubmit(cleanedData);
   };
 
   const addMuscleGroup = () => {
