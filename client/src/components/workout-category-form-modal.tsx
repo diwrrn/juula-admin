@@ -24,6 +24,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
       nameKurdish: "",
       nameArabic: "",
       iconUrl: "",
+      iconName: "",
       order: 1,
     },
   });
@@ -37,6 +38,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
           nameKurdish: category.nameKurdish || "",
           nameArabic: category.nameArabic || "",
           iconUrl: category.iconUrl || "",
+          iconName: category.iconName || "",
           order: category.order || 1,
         });
       } else {
@@ -45,6 +47,7 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
           nameKurdish: "",
           nameArabic: "",
           iconUrl: "",
+          iconName: "",
           order: 1,
         });
       }
@@ -131,26 +134,49 @@ export function WorkoutCategoryFormModal({ isOpen, onClose, category, onSubmit, 
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="iconUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Icon URL (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="https://example.com/icon.png"
-                      className="w-full"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    URL to an icon image for this category
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="iconUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Icon URL (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="https://example.com/icon.png"
+                        className="w-full"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      URL to an icon image
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="iconName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Icon Name (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="e.g., dumbbell, heart, target"
+                        className="w-full"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Name of the icon to display
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}

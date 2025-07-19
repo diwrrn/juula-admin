@@ -146,6 +146,9 @@ The application includes a comprehensive workout management system defined in `s
 - July 18, 2025: Created workout categories, exercises database, and user workout plans with session tracking
 - July 18, 2025: Implemented workout plans interface with stats, filtering, and sample data initialization
 - July 18, 2025: Added unified navigation between Foods, Meals, and Workout sections
+- July 19, 2025: Fixed Create Exercise button functionality by resolving form validation issues with categoryId/subcategoryId fields
+- July 19, 2025: Made all exercise form fields optional except for name field for simplified data entry
+- July 19, 2025: Added iconName field to workout categories and subcategories for enhanced UI customization
 
 ## User Preferences
 

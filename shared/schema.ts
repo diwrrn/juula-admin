@@ -327,6 +327,7 @@ export const workoutCategorySchema = z.object({
   nameKurdish: z.string().optional(),
   nameArabic: z.string().optional(),
   iconUrl: z.string().optional(),
+  iconName: z.string().optional(),
   order: z.number().min(1)
 });
 
@@ -337,6 +338,7 @@ export const workoutSubcategorySchema = z.object({
   nameKurdish: z.string().optional(),
   nameArabic: z.string().optional(),
   iconUrl: z.string().optional(),
+  iconName: z.string().optional(),
   order: z.number().min(1)
 });
 
