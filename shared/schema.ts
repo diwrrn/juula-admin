@@ -393,7 +393,12 @@ export const insertWorkoutSubcategorySchema = workoutSubcategorySchema.omit({
 });
 
 export const insertExerciseSchema = exerciseSchema.omit({
-  id: true
+  id: true,
+  categoryId: true,
+  subcategoryId: true
+}).extend({
+  categoryId: z.string().optional(),
+  subcategoryId: z.string().optional()
 });
 
 export const insertWorkoutPlanSchema = workoutPlanSchema.omit({

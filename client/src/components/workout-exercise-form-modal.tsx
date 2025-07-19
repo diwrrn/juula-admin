@@ -80,13 +80,6 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
   }, [exercise, form, isOpen]);
 
   const handleSubmit = (data: InsertExercise) => {
-    console.log("Form data:", data);
-    console.log("Form errors:", form.formState.errors);
-    console.log("Form is valid:", form.formState.isValid);
-    
-    // Debug alert
-    alert(`Form submission attempted. Valid: ${form.formState.isValid}`);
-    
     // Clean up the data - remove empty muscle groups
     const cleanedData = {
       ...data,
@@ -95,7 +88,6 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
       order: data.order || 1
     };
     
-    console.log("Cleaned data:", cleanedData);
     onSubmit(cleanedData);
   };
 
@@ -390,29 +382,7 @@ export function WorkoutExerciseFormModal({ isOpen, onClose, exercise, onSubmit, 
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button 
-                type="button" 
-                disabled={isLoading}
-                onClick={async () => {
-                  console.log("Submit button clicked");
-                  console.log("Form state:", form.formState);
-                  console.log("Form values:", form.getValues());
-                  console.log("Form errors:", form.formState.errors);
-                  console.log("Form is valid:", form.formState.isValid);
-                  
-                  // Force validate the form
-                  const isValid = await form.trigger();
-                  console.log("Manual validation result:", isValid);
-                  
-                  if (isValid) {
-                    const formData = form.getValues();
-                    console.log("Calling handleSubmit with:", formData);
-                    handleSubmit(formData);
-                  } else {
-                    console.log("Form validation failed:", form.formState.errors);
-                  }
-                }}
-              >
+              <Button type="submit" disabled={isLoading}>
                 {isLoading ? "Saving..." : exercise ? "Update Exercise" : "Create Exercise"}
               </Button>
             </div>
