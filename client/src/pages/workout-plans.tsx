@@ -25,7 +25,8 @@ import {
   updateExercise,
   deleteWorkoutCategory,
   deleteWorkoutSubcategory,
-  deleteExercise
+  deleteExercise,
+  initializeSampleWorkoutData
 } from "@/lib/firebase";
 
 export default function WorkoutPlans() {
@@ -272,11 +273,20 @@ export default function WorkoutPlans() {
   };
 
   const handleSubcategoryFormSubmit = (data: InsertWorkoutSubcategory) => {
-    createSubcategoryMutation.mutate(data);
+    const subcategoryData = {
+      ...data,
+      categoryId: selectedCategoryId
+    };
+    createSubcategoryMutation.mutate(subcategoryData);
   };
 
   const handleExerciseFormSubmit = (data: InsertExercise) => {
-    createExerciseMutation.mutate(data);
+    const exerciseData = {
+      ...data,
+      categoryId: selectedCategoryId,
+      subcategoryId: selectedSubcategoryId
+    };
+    createExerciseMutation.mutate(exerciseData);
   };
 
   const handleViewCategory = (categoryId: string) => {
