@@ -218,7 +218,7 @@ export default function MealsManager() {
         meal.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesMealType = mealTypeFilter === "all" || 
-        (Array.isArray(meal.mealType) ? meal.mealType.includes(mealTypeFilter) : meal.mealType === mealTypeFilter);
+        (Array.isArray(meal.mealType) ? meal.mealType.includes(mealTypeFilter as any) : meal.mealType === mealTypeFilter);
       const matchesDifficulty = difficultyFilter === "all" || meal.difficulty === difficultyFilter;
       
       return matchesSearch && matchesMealType && matchesDifficulty && meal.isActive;

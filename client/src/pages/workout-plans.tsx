@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query as firestoreQuery, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -45,24 +45,50 @@ export default function WorkoutPlans() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch workout categories
+  // Background prefetching for better UX - preload subcategories for all categories
+  useEffect(() => {
+    if (categories.length > 0) {
+      categories.forEach(category => {
+        queryClient.prefetchQuery({
+          queryKey: ["/api/workout-subcategories", category.id],
+          queryFn: () => getWorkoutSubcategories(category.id),
+          staleTime: 24 * 60 * 60 * 1000,
+        });
+      });
+    }
+  }, [categories, queryClient]);
+
+  // Add cache invalidation optimization for mutations
+  const invalidateWorkoutCache = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/workout-categories"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/workout-subcategories"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/exercises"] });
+  };
+
+  // Cached workout categories (load once, cache forever)
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ["/api/workout-categories"],
     queryFn: () => getWorkoutCategories(),
+    staleTime: 24 * 60 * 60 * 1000, // Cache for 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // Keep in memory for 24 hours
   });
 
-  // Fetch subcategories for selected category
+  // Cached subcategories for selected category
   const { data: subcategories = [], isLoading: subcategoriesLoading } = useQuery({
     queryKey: ["/api/workout-subcategories", selectedCategoryId],
     queryFn: () => getWorkoutSubcategories(selectedCategoryId),
     enabled: Boolean(selectedCategoryId),
+    staleTime: 24 * 60 * 60 * 1000, // Cache for 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // Keep in memory for 24 hours
   });
 
-  // Fetch exercises for selected category/subcategory
+  // Only fetch exercises when subcategory is explicitly selected (not just browsing categories)
   const { data: exercises = [], isLoading: exercisesLoading } = useQuery({
     queryKey: ["/api/exercises", selectedCategoryId, selectedSubcategoryId],
     queryFn: () => getExercises(selectedCategoryId, selectedSubcategoryId),
-    enabled: Boolean(selectedCategoryId && (view === "exercises" || selectedSubcategoryId)),
+    enabled: Boolean(selectedCategoryId && selectedSubcategoryId && view === "exercises"),
+    staleTime: 10 * 60 * 1000, // Cache exercises for 10 minutes
+    gcTime: 30 * 60 * 1000, // Keep in memory for 30 minutes
   });
 
   // Create category mutation
@@ -294,6 +320,12 @@ export default function WorkoutPlans() {
     setView("subcategories");
     setCurrentPage(1);
     setSearchTerm("");
+    // Pre-load subcategories when category is selected for better UX
+    queryClient.prefetchQuery({
+      queryKey: ["/api/workout-subcategories", categoryId],
+      queryFn: () => getWorkoutSubcategories(categoryId),
+      staleTime: 24 * 60 * 60 * 1000,
+    });
   };
 
   const handleViewSubcategory = (subcategoryId: string) => {
@@ -301,6 +333,12 @@ export default function WorkoutPlans() {
     setView("exercises");
     setCurrentPage(1);
     setSearchTerm("");
+    // Pre-load exercises when subcategory is selected for better UX
+    queryClient.prefetchQuery({
+      queryKey: ["/api/exercises", selectedCategoryId, subcategoryId],
+      queryFn: () => getExercises(selectedCategoryId, subcategoryId),
+      staleTime: 10 * 60 * 1000,
+    });
   };
 
   const handleBackToCategories = () => {
