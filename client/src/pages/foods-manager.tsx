@@ -43,38 +43,39 @@ export default function FoodsManager() {
   const [sortBy, setSortBy] = useState<keyof Food>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // Fetch foods from Firestore
-  const { data: foods = [], isLoading, error } = useQuery({
+  // Get foods from cache (populated by real-time listener)
+  const { data: foods = [] } = useQuery<Food[]>({
     queryKey: ["/api/foods"],
-    queryFn: async () => {
-      const foodsCollection = collection(db, "foods");
-      const q = firestoreQuery(foodsCollection, orderBy("name"));
-      const snapshot = await getDocs(q);
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-      })) as Food[];
-    },
+    queryFn: () => Promise.resolve([]), // Never called - data comes from onSnapshot
+    staleTime: Infinity, // Data is always fresh via real-time listener
   });
 
-  // Set up real-time listener
+  // Real-time listener with loading state
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
   useEffect(() => {
     const foodsCollection = collection(db, "foods");
     const q = firestoreQuery(foodsCollection, orderBy("name"));
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const updatedFoods = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-      })) as Food[];
-      
-      queryClient.setQueryData(["/api/foods"], updatedFoods);
-    });
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const updatedFoods = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate() || new Date(),
+          updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+        })) as Food[];
+        
+        queryClient.setQueryData(["/api/foods"], updatedFoods);
+        setIsLoading(false);
+        setError(null);
+      },
+      (err) => {
+        setError(err as Error);
+        setIsLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, [queryClient]);

@@ -36,55 +36,46 @@ export default function MealsManager() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
 
-  // Fetch meals from Firestore
-  const { data: meals = [], isLoading: mealsLoading, error: mealsError } = useQuery({
+  // Get meals from cache (populated by real-time listener)
+  const { data: meals = [] } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
-    queryFn: async () => {
-      const mealsCollection = collection(db, "meals");
-      const q = firestoreQuery(mealsCollection, orderBy("name"));
-      const snapshot = await getDocs(q);
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-      })) as Meal[];
-    },
+    queryFn: () => Promise.resolve([]), // Never called - data comes from onSnapshot
+    staleTime: Infinity, // Data is always fresh via real-time listener
   });
 
-  // Fetch foods for references
-  const { data: foods = [] } = useQuery({
+  // Shared foods cache - no duplicate fetching
+  const { data: foods = [] } = useQuery<Food[]>({
     queryKey: ["/api/foods"],
-    queryFn: async () => {
-      const foodsCollection = collection(db, "foods");
-      const q = firestoreQuery(foodsCollection, orderBy("name"));
-      const snapshot = await getDocs(q);
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-      })) as Food[];
-    },
+    queryFn: () => Promise.resolve([]), // Never called - data comes from Foods Manager's onSnapshot
+    staleTime: Infinity, // Data is always fresh via real-time listener
   });
 
-  // Set up real-time listener for meals
+  // Real-time listener with loading state for meals
+  const [mealsLoading, setMealsLoading] = useState(true);
+  const [mealsError, setMealsError] = useState<Error | null>(null);
+
   useEffect(() => {
     const mealsCollection = collection(db, "meals");
     const q = firestoreQuery(mealsCollection, orderBy("name"));
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const updatedMeals = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-      })) as Meal[];
-      
-      queryClient.setQueryData(["/api/meals"], updatedMeals);
-    });
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const updatedMeals = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate() || new Date(),
+          updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+        })) as Meal[];
+        
+        queryClient.setQueryData(["/api/meals"], updatedMeals);
+        setMealsLoading(false);
+        setMealsError(null);
+      },
+      (err) => {
+        setMealsError(err as Error);
+        setMealsLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, [queryClient]);
