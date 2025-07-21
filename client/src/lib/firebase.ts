@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy } from "firebase/firestore";
+import { getFirestore, connectFirestoreEmulator, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, limit } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 import type { WorkoutCategory, WorkoutSubcategory, Exercise, InsertWorkoutCategory, InsertWorkoutSubcategory, InsertExercise } from '@shared/schema';
 
@@ -206,7 +206,8 @@ export const getExercises = async (categoryId: string, subcategoryId?: string): 
       collection(db, 'workoutCategories', categoryId, 'subcategories', subcategoryId, 'exercises') :
       collection(db, 'workoutCategories', categoryId, 'exercises');
     
-    const querySnapshot = await getDocs(query(exercisesRef, orderBy('order')));
+    // Add limit to prevent loading too many exercises at once
+    const querySnapshot = await getDocs(query(exercisesRef, orderBy('order'), limit(20)));
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()

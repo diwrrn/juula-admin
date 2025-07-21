@@ -10,7 +10,8 @@ import {
   orderBy, 
   query as firestoreQuery,
   where,
-  onSnapshot
+  onSnapshot,
+  limit
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Food, InsertFood, categoryConfig } from "@shared/schema";
@@ -42,6 +43,9 @@ export default function FoodsManager() {
   const [pageSize, setPageSize] = useState(10);
   const [sortBy, setSortBy] = useState<keyof Food>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [hasSearched, setHasSearched] = useState(false);
+  const [foodsLimit, setFoodsLimit] = useState(50); // Load 50 foods initially instead of all
+  const [canLoadMore, setCanLoadMore] = useState(true); // Track if more foods can be loaded
 
   // Get foods from cache (populated by real-time listener)
   const { data: foods = [] } = useQuery<Food[]>({
@@ -56,7 +60,22 @@ export default function FoodsManager() {
 
   useEffect(() => {
     const foodsCollection = collection(db, "foods");
-    const q = firestoreQuery(foodsCollection, orderBy("name"));
+    
+    // Build query based on search state
+    let q;
+    if (searchTerm && hasSearched) {
+      // Search query with limit
+      q = firestoreQuery(
+        foodsCollection,
+        where("name", ">=", searchTerm),
+        where("name", "<=", searchTerm + '\uf8ff'),
+        orderBy("name"),
+        limit(50)
+      );
+    } else {
+      // Default query with limit for initial load
+      q = firestoreQuery(foodsCollection, orderBy("name"), limit(foodsLimit));
+    }
     
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
@@ -66,6 +85,9 @@ export default function FoodsManager() {
           createdAt: doc.data().createdAt?.toDate() || new Date(),
           updatedAt: doc.data().updatedAt?.toDate() || new Date(),
         })) as Food[];
+        
+        // Check if we can load more (less foods returned than limit)
+        setCanLoadMore(updatedFoods.length >= (searchTerm && hasSearched ? 50 : foodsLimit));
         
         queryClient.setQueryData(["/api/foods"], updatedFoods);
         setIsLoading(false);
@@ -78,7 +100,7 @@ export default function FoodsManager() {
     );
 
     return () => unsubscribe();
-  }, [queryClient]);
+  }, [queryClient, searchTerm, hasSearched, foodsLimit]);
 
   // Add food mutation
   const addFoodMutation = useMutation({
@@ -403,9 +425,17 @@ export default function FoodsManager() {
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search foods by name (English, Kurdish, Arabic), brand, or description..."
+                    placeholder="Search foods... (Firebase search after 3+ characters)"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      // Trigger Firebase search for 3+ characters
+                      if (e.target.value.length >= 3) {
+                        setHasSearched(true);
+                      } else if (e.target.value.length === 0) {
+                        setHasSearched(false);
+                      }
+                    }}
                     className="pl-10"
                   />
                 </div>
@@ -440,6 +470,35 @@ export default function FoodsManager() {
             ) : (
               <>
                 {/* Foods Table */}
+                {/* Load More Foods Button */}
+                {!searchTerm && canLoadMore && foods.length >= foodsLimit && (
+                  <div className="flex justify-center py-4 mb-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setFoodsLimit(prev => prev + 50)}
+                      disabled={isLoading}
+                    >
+                      Load More Foods ({foods.length} loaded, limited to {foodsLimit})
+                    </Button>
+                  </div>
+                )}
+
+                {/* Search Results Info */}
+                {searchTerm && hasSearched && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                    <div className="text-sm text-blue-800">
+                      Firebase search results for "{searchTerm}" - showing up to 50 matches
+                    </div>
+                  </div>
+                )}
+                {searchTerm && !hasSearched && searchTerm.length > 0 && searchTerm.length < 3 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                    <div className="text-sm text-yellow-800">
+                      Client-side search active for "{searchTerm}" - type 3+ characters for Firebase search
+                    </div>
+                  </div>
+                )}
+
                 <FoodsTable
                   foods={paginatedFoods}
                   selectedFoods={selectedFoods}

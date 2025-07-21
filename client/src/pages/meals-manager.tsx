@@ -9,7 +9,8 @@ import {
   doc, 
   orderBy, 
   query as firestoreQuery,
-  onSnapshot
+  onSnapshot,
+  limit
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Meal, InsertMeal, Food } from "@shared/schema";
@@ -56,7 +57,8 @@ export default function MealsManager() {
 
   useEffect(() => {
     const mealsCollection = collection(db, "meals");
-    const q = firestoreQuery(mealsCollection, orderBy("name"));
+    // Add limit to meals loading (30 meals initially)
+    const q = firestoreQuery(mealsCollection, orderBy("name"), limit(30));
     
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
