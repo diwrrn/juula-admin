@@ -45,6 +45,14 @@ export default function WorkoutPlans() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Cached workout categories (load once, cache forever)
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ["/api/workout-categories"],
+    queryFn: () => getWorkoutCategories(),
+    staleTime: 24 * 60 * 60 * 1000, // Cache for 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // Keep in memory for 24 hours
+  });
+
   // Background prefetching for better UX - preload subcategories for all categories
   useEffect(() => {
     if (categories.length > 0) {
@@ -64,14 +72,6 @@ export default function WorkoutPlans() {
     queryClient.invalidateQueries({ queryKey: ["/api/workout-subcategories"] });
     queryClient.invalidateQueries({ queryKey: ["/api/exercises"] });
   };
-
-  // Cached workout categories (load once, cache forever)
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
-    queryKey: ["/api/workout-categories"],
-    queryFn: () => getWorkoutCategories(),
-    staleTime: 24 * 60 * 60 * 1000, // Cache for 24 hours
-    gcTime: 24 * 60 * 60 * 1000, // Keep in memory for 24 hours
-  });
 
   // Cached subcategories for selected category
   const { data: subcategories = [], isLoading: subcategoriesLoading } = useQuery({
