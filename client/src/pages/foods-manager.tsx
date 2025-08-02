@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Utensils, Plus, Search, Filter, Download, CheckCircle, ChefHat, Dumbbell } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
+import { LogoutButton } from "@/components/logout-button";
 
 export default function FoodsManager() {
   const { toast } = useToast();
