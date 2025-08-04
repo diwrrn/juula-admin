@@ -304,22 +304,34 @@ export default function RevenueCatUsers() {
               
               <div className="border-t pt-6">
                 <h3 className="font-medium mb-4">Test API Connection</h3>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Enter a subscriber user ID to test"
-                    value={testUserId}
-                    onChange={(e) => setTestUserId(e.target.value)}
-                  />
-                  <Button 
-                    onClick={() => testSubscriberMutation.mutate(testUserId)}
-                    disabled={!testUserId || testSubscriberMutation.isPending}
-                  >
-                    {testSubscriberMutation.isPending ? "Testing..." : "Test"}
-                  </Button>
+                <div className="space-y-4">
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-medium text-blue-800 mb-2">How to Find Subscriber IDs:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>1. Go to your RevenueCat dashboard → "Customers" section</li>
+                      <li>2. Look for App User IDs like: user_123, john@email.com, or $RCAnonymousID:abc123</li>
+                      <li>3. Copy any App User ID and paste it below</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Enter App User ID from RevenueCat dashboard (e.g., user_123 or john@email.com)"
+                      value={testUserId}
+                      onChange={(e) => setTestUserId(e.target.value)}
+                    />
+                    <Button 
+                      onClick={() => testSubscriberMutation.mutate(testUserId)}
+                      disabled={!testUserId || testSubscriberMutation.isPending}
+                    >
+                      {testSubscriberMutation.isPending ? "Testing..." : "Test"}
+                    </Button>
+                  </div>
+                  
+                  <div className="text-xs text-muted-foreground">
+                    <p>Need help? Go to <strong>RevenueCat Dashboard → Customers</strong> to find existing subscriber IDs</p>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Enter any subscriber user ID from your RevenueCat dashboard to test the connection
-                </p>
                 
                 {testResult && (
                   <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
