@@ -412,40 +412,7 @@ export default function RevenueCatUsers() {
             </CardContent>
           </Card>
 
-          {/* Grant Entitlement Section */}
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Gift className="h-5 w-5 text-green-600" />
-                Grant Free Entitlements
-              </CardTitle>
-              <CardDescription>
-                Give free access to friends, family, or beta testers using RevenueCat's API
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <h4 className="font-medium text-green-800 mb-2">Perfect for:</h4>
-                  <ul className="text-sm text-green-700 space-y-1">
-                    <li>• Friends and family members</li>
-                    <li>• Beta testers and reviewers</li>
-                    <li>• Promotional giveaways</li>
-                    <li>• Customer support cases</li>
-                  </ul>
-                </div>
-                
-                <Button 
-                  onClick={() => setIsGrantModalOpen(true)}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                  size="lg"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Grant Entitlement to User
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+
           
           <Card className="max-w-4xl mx-auto">
             <CardHeader>
@@ -584,6 +551,41 @@ export default function RevenueCatUsers() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Grant Entitlement Section */}
+        <Card className="max-w-2xl mx-auto mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5 text-green-600" />
+              Grant Free Entitlements
+            </CardTitle>
+            <CardDescription>
+              Give free access to friends, family, or beta testers using RevenueCat's API
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-medium text-green-800 mb-2">Perfect for:</h4>
+                <ul className="text-sm text-green-700 space-y-1">
+                  <li>• Friends and family members</li>
+                  <li>• Beta testers and reviewers</li>
+                  <li>• Promotional giveaways</li>
+                  <li>• Customer support cases</li>
+                </ul>
+              </div>
+              
+              <Button 
+                onClick={() => setIsGrantModalOpen(true)}
+                className="w-full bg-green-600 hover:bg-green-700"
+                size="lg"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Grant Entitlement to User
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Filters */}
         <div className="flex items-center justify-between mb-6">
