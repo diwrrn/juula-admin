@@ -217,8 +217,9 @@ export default function RevenueCatUsers() {
     },
   });
 
-  // Filter subscribers
-  const filteredSubscribers = subscribers.filter((subscriber: RevenueCatSubscriber) => {
+  // Filter subscribers - handle case where subscribers might not be an array
+  const subscribersArray = Array.isArray(subscribers) ? subscribers : [];
+  const filteredSubscribers = subscribersArray.filter((subscriber: RevenueCatSubscriber) => {
     const matchesSearch = 
       subscriber.subscriber.original_app_user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       Object.keys(subscriber.subscriber.subscriptions).some(key => 
@@ -429,7 +430,7 @@ export default function RevenueCatUsers() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{subscribers.length}</div>
+              <div className="text-2xl font-bold">{subscribersArray.length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -439,7 +440,7 @@ export default function RevenueCatUsers() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {subscribers.filter((s: RevenueCatSubscriber) => 
+                {subscribersArray.filter((s: RevenueCatSubscriber) => 
                   getSubscriptionStatus(s.subscriber.subscriptions) === "active"
                 ).length}
               </div>
@@ -452,7 +453,7 @@ export default function RevenueCatUsers() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {subscribers.filter((s: RevenueCatSubscriber) => 
+                {subscribersArray.filter((s: RevenueCatSubscriber) => 
                   getSubscriptionStatus(s.subscriber.subscriptions) === "expired"
                 ).length}
               </div>
@@ -519,7 +520,18 @@ export default function RevenueCatUsers() {
             {isLoading ? (
               <div className="text-center py-8">
                 <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-                Loading subscribers...
+                Loading configuration...
+              </div>
+            ) : subscribersArray.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">No Subscribers Found</h3>
+                <p className="text-muted-foreground mb-4">
+                  RevenueCat doesn't provide a "list all subscribers" endpoint. Use the test feature above to fetch individual subscriber data.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  To manage multiple subscribers, consider implementing webhooks or maintaining your own user database.
+                </p>
               </div>
             ) : (
               <>
