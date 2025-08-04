@@ -70,6 +70,9 @@ export default function RevenueCatUsers() {
     if (storedApiKey) {
       setApiKey(storedApiKey);
       setIsConfigured(true);
+    } else {
+      // Auto-configure if we have environment secret
+      setIsConfigured(true);
     }
   }, []);
 
@@ -85,21 +88,23 @@ export default function RevenueCatUsers() {
     }
   };
 
+  // State for user testing
+  const [testUserId, setTestUserId] = useState("");
+  const [testResult, setTestResult] = useState<any>(null);
+
   // Fetch all subscribers (this would need to be implemented with proper pagination)
   const { data: subscribers = [], isLoading, error, refetch } = useQuery({
     queryKey: ["/api/revenuecat/subscribers"],
     queryFn: async () => {
-      if (!apiKey) return [];
-      
       // Note: RevenueCat doesn't have a direct "list all subscribers" endpoint
       // This would typically require you to maintain a list of user IDs
-      // For demonstration, we'll show how to fetch a specific user
+      // For demonstration, we'll show how to test with a specific user
       const response = await fetch('/api/revenuecat/subscribers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ apiKey }),
+        body: JSON.stringify({ apiKey: apiKey || 'from_env' }),
       });
       
       if (!response.ok) {
@@ -112,6 +117,43 @@ export default function RevenueCatUsers() {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
+  // Test subscriber mutation
+  const testSubscriberMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await fetch('/api/revenuecat/test-subscriber', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          apiKey: apiKey || 'from_env',
+          userId 
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to test subscriber');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setTestResult(data);
+      toast({
+        title: "Success",
+        description: "Successfully fetched subscriber data from RevenueCat",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to fetch subscriber: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Get subscriber details
   const getSubscriberMutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -120,7 +162,7 @@ export default function RevenueCatUsers() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ apiKey }),
+        body: JSON.stringify({ apiKey: apiKey || 'from_env' }),
       });
       
       if (!response.ok) {
@@ -232,27 +274,106 @@ export default function RevenueCatUsers() {
           </div>
         </div>
 
-        <div className="container mx-auto px-6 py-8">
-          <Card className="max-w-md mx-auto">
+        <div className="container mx-auto px-6 py-8 space-y-6">
+          <Card className="max-w-2xl mx-auto">
             <CardHeader>
-              <CardTitle>Configure RevenueCat API</CardTitle>
+              <CardTitle>RevenueCat Integration</CardTitle>
               <CardDescription>
-                Enter your RevenueCat secret API key to access subscriber data
+                Test your RevenueCat API connection and view subscriber data
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Input
-                type="password"
-                placeholder="sk_xxx..."
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-              />
-              <Button onClick={handleApiKeySubmit} className="w-full">
-                Save API Key
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                Your API key will be stored securely in your browser and used to fetch subscriber data.
-              </p>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">API Key (Optional)</label>
+                  <Input
+                    type="password"
+                    placeholder="sk_xxx... (or leave empty to use environment secret)"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leave empty to use the REVENUECAT_SECRET_API_KEY environment variable
+                  </p>
+                </div>
+                <Button onClick={handleApiKeySubmit} className="w-full">
+                  Save Configuration
+                </Button>
+              </div>
+              
+              <div className="border-t pt-6">
+                <h3 className="font-medium mb-4">Test API Connection</h3>
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Enter a subscriber user ID to test"
+                    value={testUserId}
+                    onChange={(e) => setTestUserId(e.target.value)}
+                  />
+                  <Button 
+                    onClick={() => testSubscriberMutation.mutate(testUserId)}
+                    disabled={!testUserId || testSubscriberMutation.isPending}
+                  >
+                    {testSubscriberMutation.isPending ? "Testing..." : "Test"}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Enter any subscriber user ID from your RevenueCat dashboard to test the connection
+                </p>
+                
+                {testResult && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h4 className="font-medium text-green-800 mb-2">API Test Successful!</h4>
+                    <div className="text-sm text-green-700">
+                      <p><strong>User ID:</strong> {testResult.subscriber?.original_app_user_id}</p>
+                      <p><strong>Subscriptions:</strong> {Object.keys(testResult.subscriber?.subscriptions || {}).length}</p>
+                      <p><strong>First Seen:</strong> {testResult.subscriber?.first_seen}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="max-w-4xl mx-auto">
+            <CardHeader>
+              <CardTitle>RevenueCat API Limitations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <h4 className="font-medium text-yellow-800 mb-2">Important Notes:</h4>
+                  <ul className="text-sm text-yellow-700 space-y-1">
+                    <li>• RevenueCat doesn't provide a "list all subscribers" endpoint</li>
+                    <li>• You need specific user IDs to fetch subscriber data</li>
+                    <li>• Use webhooks or maintain your own user database for full subscriber management</li>
+                    <li>• This interface is designed for testing and viewing individual subscriber details</li>
+                  </ul>
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Available Features:</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>✓ Test API connection</li>
+                      <li>✓ Fetch individual subscriber data</li>
+                      <li>✓ View subscription details</li>
+                      <li>✓ Check entitlements</li>
+                      <li>✓ Delete subscribers</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Implementation Suggestions:</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Set up RevenueCat webhooks</li>
+                      <li>• Store user IDs in your database</li>
+                      <li>• Implement batch user management</li>
+                      <li>• Add revenue analytics</li>
+                      <li>• Create subscription reports</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
