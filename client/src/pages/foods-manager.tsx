@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Utensils, Plus, Search, Filter, Download, CheckCircle, ChefHat, Dumbbell } from "lucide-react";
+import { Utensils, Plus, Search, Filter, Download, CheckCircle, ChefHat, Dumbbell, Crown } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { LogoutButton } from "@/components/logout-button";
@@ -325,6 +325,12 @@ export default function FoodsManager() {
                   Workouts
                 </Button>
               </Link>
+              <Link href="/revenuecat-users">
+                <Button variant="ghost" size="sm">
+                  <Crown className="h-4 w-4 mr-1" />
+                  Users
+                </Button>
+              </Link>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
@@ -332,12 +338,7 @@ export default function FoodsManager() {
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-sm text-gray-600">Connected to Firebase</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                <span className="text-sm font-medium">A</span>
-              </div>
-              <span className="text-sm font-medium text-gray-700">Admin User</span>
-            </div>
+            <LogoutButton />
           </div>
         </div>
       </header>

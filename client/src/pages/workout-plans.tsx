@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Edit, Trash2, Dumbbell, Users, Clock, FolderOpen, Target, ArrowLeft, Play } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Dumbbell, Users, Clock, FolderOpen, Target, ArrowLeft, Play, Crown } from "lucide-react";
 import { Link } from "wouter";
 import type { WorkoutCategory, WorkoutSubcategory, Exercise, InsertWorkoutCategory, InsertWorkoutSubcategory, InsertExercise } from "@shared/schema";
 import { WorkoutCategoryFormModal } from "@/components/workout-category-form-modal";
@@ -383,6 +383,12 @@ export default function WorkoutPlans() {
                 <Button variant="ghost" size="sm" className="text-blue-600 bg-blue-50">
                   <Dumbbell className="h-4 w-4 mr-1" />
                   Workouts
+                </Button>
+              </Link>
+              <Link href="/revenuecat-users">
+                <Button variant="ghost" size="sm">
+                  <Crown className="h-4 w-4 mr-1" />
+                  Users
                 </Button>
               </Link>
             </nav>

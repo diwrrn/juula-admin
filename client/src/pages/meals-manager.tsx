@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ChefHat, Plus, Search, Clock, Users, Star, Edit, Trash2, Utensils, Dumbbell } from "lucide-react";
+import { ChefHat, Plus, Search, Clock, Users, Star, Edit, Trash2, Utensils, Dumbbell, Crown } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { MealFormModal } from "@/components/meal-form-modal";
 
@@ -287,6 +287,12 @@ export default function MealsManager() {
                 <Button variant="ghost" size="sm">
                   <Dumbbell className="h-4 w-4 mr-1" />
                   Workouts
+                </Button>
+              </Link>
+              <Link href="/revenuecat-users">
+                <Button variant="ghost" size="sm">
+                  <Crown className="h-4 w-4 mr-1" />
+                  Users
                 </Button>
               </Link>
             </nav>
