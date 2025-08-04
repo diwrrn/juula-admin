@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import FoodsManager from "@/pages/foods-manager";
 import MealsManager from "@/pages/meals-manager";
 import WorkoutPlans from "@/pages/workout-plans";
+import RevenueCatUsers from "@/pages/revenuecat-users";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import { useState, useEffect } from "react";
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/" component={FoodsManager} />
       <Route path="/meals" component={MealsManager} />
       <Route path="/workout-plans" component={WorkoutPlans} />
+      <Route path="/revenuecat-users" component={RevenueCatUsers} />
       <Route component={NotFound} />
     </Switch>
   );
