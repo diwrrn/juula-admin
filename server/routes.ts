@@ -63,6 +63,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Grant entitlement to a user
+  app.post("/api/revenuecat/grant-entitlement", async (req, res) => {
+    try {
+      const { apiKey, userId, entitlementId, duration } = req.body;
+      const finalApiKey = apiKey === 'from_env' ? process.env.REVENUECAT_SECRET_API_KEY : apiKey;
+      
+      if (!finalApiKey) {
+        return res.status(400).json({ error: "API key is required" });
+      }
+
+      if (!userId || !entitlementId) {
+        return res.status(400).json({ error: "User ID and entitlement ID are required" });
+      }
+
+      // Calculate expiration date (if duration is provided, otherwise make it indefinite)
+      let expirationDate = null;
+      if (duration && duration !== 'lifetime') {
+        const now = new Date();
+        const durationDays = parseInt(duration);
+        expirationDate = new Date(now.getTime() + (durationDays * 24 * 60 * 60 * 1000)).toISOString();
+      }
+
+      // Grant entitlement using RevenueCat API
+      const payload = {
+        entitlements: {
+          [entitlementId]: {
+            product_identifier: entitlementId,
+            expires_date: expirationDate
+          }
+        }
+      };
+
+      const response = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}/entitlements`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${finalApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return res.status(response.status).json({ error: errorText });
+      }
+
+      const data = await response.json();
+      res.json({ 
+        success: true, 
+        message: `Entitlement "${entitlementId}" granted to user "${userId}"`,
+        data 
+      });
+    } catch (error) {
+      console.error("RevenueCat grant entitlement error:", error);
+      res.status(500).json({ error: "Failed to grant entitlement" });
+    }
+  });
+
+  // Test subscriber endpoint
+  app.post("/api/revenuecat/test-subscriber", async (req, res) => {
+    try {
+      const { apiKey, userId } = req.body;
+      const finalApiKey = apiKey === 'from_env' ? process.env.REVENUECAT_SECRET_API_KEY : apiKey;
+      
+      if (!finalApiKey) {
+        return res.status(400).json({ error: "API key is required" });
+      }
+
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
+      // Fetch subscriber details from RevenueCat
+      const response = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}`, {
+        headers: {
+          'Authorization': `Bearer ${finalApiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return res.status(response.status).json({ error: errorText });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("RevenueCat test subscriber error:", error);
+      res.status(500).json({ error: "Failed to test subscriber" });
+    }
+  });
+
   app.delete("/api/revenuecat/subscriber/:userId", async (req, res) => {
     try {
       const { apiKey } = req.body;

@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Users, Crown, Calendar, DollarSign, Settings, RefreshCw, Trash2, Eye } from "lucide-react";
+import { Search, Users, Crown, Calendar, DollarSign, Settings, RefreshCw, Trash2, Eye, Gift, Plus } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { LogoutButton } from "@/components/logout-button";
 
@@ -91,6 +92,12 @@ export default function RevenueCatUsers() {
   // State for user testing
   const [testUserId, setTestUserId] = useState("");
   const [testResult, setTestResult] = useState<any>(null);
+  
+  // State for granting entitlements
+  const [grantUserId, setGrantUserId] = useState("");
+  const [grantEntitlementId, setGrantEntitlementId] = useState("");
+  const [grantDuration, setGrantDuration] = useState("lifetime");
+  const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
 
   // Fetch all subscribers (this would need to be implemented with proper pagination)
   const { data: subscribers = [], isLoading, error, refetch } = useQuery({
@@ -153,6 +160,64 @@ export default function RevenueCatUsers() {
       });
     },
   });
+
+  // Grant entitlement mutation
+  const grantEntitlementMutation = useMutation({
+    mutationFn: async (params: { userId: string; entitlementId: string; duration: string }) => {
+      const response = await fetch('/api/revenuecat/grant-entitlement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: apiKey || 'from_env',
+          userId: params.userId,
+          entitlementId: params.entitlementId,
+          duration: params.duration
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to grant entitlement: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Entitlement Granted!",
+        description: data.message,
+      });
+      setIsGrantModalOpen(false);
+      setGrantUserId("");
+      setGrantEntitlementId("");
+      setGrantDuration("lifetime");
+      refetch(); // Refresh the subscriber list
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Failed to Grant Entitlement",
+        description: error.message || "Please check your inputs and try again",
+      });
+    }
+  });
+
+  const handleGrantEntitlement = () => {
+    if (!grantUserId.trim() || !grantEntitlementId.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please provide both User ID and Entitlement ID",
+      });
+      return;
+    }
+
+    grantEntitlementMutation.mutate({
+      userId: grantUserId.trim(),
+      entitlementId: grantEntitlementId.trim(),
+      duration: grantDuration
+    });
+  };
 
   // Get subscriber details
   const getSubscriberMutation = useMutation({
@@ -343,6 +408,41 @@ export default function RevenueCatUsers() {
                     </div>
                   </div>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Grant Entitlement Section */}
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Gift className="h-5 w-5 text-green-600" />
+                Grant Free Entitlements
+              </CardTitle>
+              <CardDescription>
+                Give free access to friends, family, or beta testers using RevenueCat's API
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="font-medium text-green-800 mb-2">Perfect for:</h4>
+                  <ul className="text-sm text-green-700 space-y-1">
+                    <li>• Friends and family members</li>
+                    <li>• Beta testers and reviewers</li>
+                    <li>• Promotional giveaways</li>
+                    <li>• Customer support cases</li>
+                  </ul>
+                </div>
+                
+                <Button 
+                  onClick={() => setIsGrantModalOpen(true)}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  size="lg"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Grant Entitlement to User
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -751,6 +851,100 @@ export default function RevenueCatUsers() {
               </Card>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Grant Entitlement Modal */}
+      <Dialog open={isGrantModalOpen} onOpenChange={setIsGrantModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5 text-green-600" />
+              Grant Free Entitlement
+            </DialogTitle>
+            <DialogDescription>
+              Give a user free access to your premium features
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">User ID</label>
+              <Input
+                placeholder="Enter user ID (e.g., user_123, john@email.com)"
+                value={grantUserId}
+                onChange={(e) => setGrantUserId(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                The RevenueCat App User ID of the person you want to grant access to
+              </p>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Entitlement ID</label>
+              <Input
+                placeholder="Enter entitlement ID (e.g., premium, pro_access)"
+                value={grantEntitlementId}
+                onChange={(e) => setGrantEntitlementId(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                The entitlement identifier configured in your RevenueCat dashboard
+              </p>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Duration</label>
+              <Select value={grantDuration} onValueChange={setGrantDuration}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lifetime">Lifetime Access</SelectItem>
+                  <SelectItem value="30">30 Days</SelectItem>
+                  <SelectItem value="60">60 Days</SelectItem>
+                  <SelectItem value="90">90 Days</SelectItem>
+                  <SelectItem value="365">1 Year</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <h4 className="font-medium text-amber-800 mb-1">Important Notes:</h4>
+              <ul className="text-xs text-amber-700 space-y-1">
+                <li>• This grants entitlements directly via RevenueCat API</li>
+                <li>• User will have access without purchasing</li>
+                <li>• Perfect for friends, family, and beta testers</li>
+                <li>• Make sure the entitlement ID matches your app configuration</li>
+              </ul>
+            </div>
+            
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsGrantModalOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleGrantEntitlement}
+                disabled={grantEntitlementMutation.isPending || !grantUserId.trim() || !grantEntitlementId.trim()}
+                className="flex-1 bg-green-600 hover:bg-green-700"
+              >
+                {grantEntitlementMutation.isPending ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Granting...
+                  </>
+                ) : (
+                  <>
+                    <Gift className="h-4 w-4 mr-2" />
+                    Grant Access
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
