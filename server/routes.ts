@@ -11,20 +11,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // RevenueCat API routes
   app.post("/api/revenuecat/subscribers", async (req, res) => {
     try {
-      const { apiKey } = req.body;
+      const { apiKey, userIds } = req.body;
       const finalApiKey = apiKey === 'from_env' ? process.env.REVENUECAT_SECRET_API_KEY : apiKey;
       
       if (!finalApiKey) {
         return res.status(400).json({ error: "API key is required" });
       }
 
-      // Note: RevenueCat doesn't have a direct "list all subscribers" endpoint
-      // This would typically require you to maintain a list of user IDs or use webhooks
-      // For now, we'll return a sample response with API status
+      // If no user IDs provided, return configuration status
+      if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+        return res.json({
+          message: "RevenueCat API configured successfully",
+          note: "Provide user IDs to fetch subscriber data",
+          apiKeyConfigured: !!finalApiKey,
+          subscribers: []
+        });
+      }
+
+      // Fetch multiple subscribers
+      console.log(`Fetching data for ${userIds.length} users...`);
+      const subscribers = [];
+      
+      for (const userId of userIds) {
+        try {
+          const response = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}`, {
+            headers: {
+              'Authorization': `Bearer ${finalApiKey}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            subscribers.push(data);
+            console.log(`✓ Successfully fetched data for user: ${userId}`);
+          } else {
+            console.log(`✗ Failed to fetch data for user: ${userId} (${response.status})`);
+          }
+        } catch (error) {
+          console.log(`✗ Error fetching data for user: ${userId}`, error);
+        }
+      }
+
       res.json({
-        message: "RevenueCat API configured successfully",
-        note: "Use the test endpoint with specific user IDs to fetch subscriber data",
-        apiKeyConfigured: !!finalApiKey
+        message: `Successfully fetched ${subscribers.length} of ${userIds.length} subscribers`,
+        subscribers: subscribers,
+        total: subscribers.length
       });
     } catch (error) {
       console.error("RevenueCat API error:", error);

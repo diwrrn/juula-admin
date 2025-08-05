@@ -98,20 +98,24 @@ export default function RevenueCatUsers() {
   const [grantEntitlementId, setGrantEntitlementId] = useState("");
   const [grantDuration, setGrantDuration] = useState("lifetime");
   const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
+  
+  // State for user ID management
+  const [userIdsInput, setUserIdsInput] = useState("");
+  const [searchUserIds, setSearchUserIds] = useState<string[]>([]);
 
   // Fetch all subscribers (this would need to be implemented with proper pagination)
-  const { data: subscribers = [], isLoading, error, refetch } = useQuery({
-    queryKey: ["/api/revenuecat/subscribers"],
+  const { data: subscribersData, isLoading, error, refetch } = useQuery({
+    queryKey: ["/api/revenuecat/subscribers", searchUserIds],
     queryFn: async () => {
-      // Note: RevenueCat doesn't have a direct "list all subscribers" endpoint
-      // This would typically require you to maintain a list of user IDs
-      // For demonstration, we'll show how to test with a specific user
       const response = await fetch('/api/revenuecat/subscribers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ apiKey: apiKey || 'from_env' }),
+        body: JSON.stringify({ 
+          apiKey: apiKey || 'from_env',
+          userIds: searchUserIds
+        }),
       });
       
       if (!response.ok) {
@@ -123,6 +127,8 @@ export default function RevenueCatUsers() {
     enabled: isConfigured,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
+
+  const subscribers = subscribersData?.subscribers || [];
 
   // Test subscriber mutation
   const testSubscriberMutation = useMutation({
@@ -216,6 +222,29 @@ export default function RevenueCatUsers() {
       userId: grantUserId.trim(),
       entitlementId: grantEntitlementId.trim(),
       duration: grantDuration
+    });
+  };
+
+  // Handle user IDs input
+  const handleUserIdsSubmit = () => {
+    const userIds = userIdsInput
+      .split(',')
+      .map(id => id.trim())
+      .filter(id => id.length > 0);
+    
+    if (userIds.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No User IDs",
+        description: "Please enter at least one user ID",
+      });
+      return;
+    }
+
+    setSearchUserIds(userIds);
+    toast({
+      title: "Searching Users",
+      description: `Searching for ${userIds.length} user(s)...`,
     });
   };
 
@@ -552,6 +581,51 @@ export default function RevenueCatUsers() {
           </Card>
         </div>
 
+        {/* User Search Section */}
+        <Card className="max-w-2xl mx-auto mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5 text-blue-600" />
+              Search for Subscribers
+            </CardTitle>
+            <CardDescription>
+              RevenueCat doesn't provide a "list all subscribers" endpoint. Enter specific user IDs to fetch their data.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">User IDs (comma-separated)</label>
+                <Input
+                  placeholder="user1, user2, UySqm239mIQUFWBS9AEqD3dkLra2"
+                  value={userIdsInput}
+                  onChange={(e) => setUserIdsInput(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter one or more user IDs separated by commas. You can find user IDs in your RevenueCat dashboard or app analytics.
+                </p>
+              </div>
+              
+              <Button 
+                onClick={handleUserIdsSubmit}
+                className="w-full"
+                disabled={!userIdsInput.trim()}
+              >
+                <Search className="h-4 w-4 mr-2" />
+                Search Subscribers
+              </Button>
+              
+              {searchUserIds.length > 0 && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Searching for:</strong> {searchUserIds.join(", ")}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Grant Entitlement Section */}
         <Card className="max-w-2xl mx-auto mb-6">
           <CardHeader>
@@ -636,15 +710,26 @@ export default function RevenueCatUsers() {
                 <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
                 Loading configuration...
               </div>
-            ) : subscribersArray.length === 0 ? (
+            ) : searchUserIds.length === 0 ? (
               <div className="text-center py-8">
-                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">No Subscribers Found</h3>
+                <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">Ready to Search</h3>
                 <p className="text-muted-foreground mb-4">
-                  RevenueCat doesn't provide a "list all subscribers" endpoint. Use the test feature above to fetch individual subscriber data.
+                  Use the "Search for Subscribers" section above to enter user IDs and fetch their data.
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  To manage multiple subscribers, consider implementing webhooks or maintaining your own user database.
+                  RevenueCat requires specific user IDs to fetch subscriber information.
+                </p>
+              </div>
+            ) : subscribers.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">No Valid Subscribers Found</h3>
+                <p className="text-muted-foreground mb-4">
+                  None of the provided user IDs returned valid subscriber data. Check the user IDs and try again.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Searched for: {searchUserIds.join(", ")}
                 </p>
               </div>
             ) : (
