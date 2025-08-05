@@ -77,25 +77,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "User ID and entitlement ID are required" });
       }
 
-      // Calculate expiration date (if duration is provided, otherwise make it indefinite)
-      let expirationDate = null;
-      if (duration && duration !== 'lifetime') {
-        const now = new Date();
+      // Convert duration to RevenueCat format
+      let durationValue;
+      if (duration === 'lifetime' || !duration) {
+        durationValue = 'lifetime';
+      } else {
         const durationDays = parseInt(duration);
-        expirationDate = new Date(now.getTime() + (durationDays * 24 * 60 * 60 * 1000)).toISOString();
+        if (durationDays === 30) durationValue = 'monthly';
+        else if (durationDays === 60) durationValue = 'two_month';
+        else if (durationDays === 90) durationValue = 'three_month';
+        else if (durationDays === 365) durationValue = 'yearly';
+        else durationValue = `P${durationDays}D`; // ISO 8601 duration format
       }
 
-      // Grant entitlement using RevenueCat API
+      // Grant entitlement using RevenueCat promotional entitlement API
       const payload = {
-        entitlements: {
-          [entitlementId]: {
-            product_identifier: entitlementId,
-            expires_date: expirationDate
-          }
-        }
+        duration: durationValue
       };
 
-      const response = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}/entitlements`, {
+      console.log(`Granting entitlement "${entitlementId}" to user "${userId}" with duration "${durationValue}"`);
+
+      const response = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}/entitlements/${encodeURIComponent(entitlementId)}/promotional`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${finalApiKey}`,
