@@ -80,12 +80,61 @@ export default function FoodsManager() {
     
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
-        const updatedFoods = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate() || new Date(),
-          updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-        })) as Food[];
+        const updatedFoods = snapshot.docs.map(doc => {
+          const data = doc.data();
+          console.log('Raw Firebase data:', data); // Debug log
+          
+          // Ensure proper data structure
+          const food = {
+            id: doc.id,
+            name: data.name || '',
+            kurdishName: data.kurdishName,
+            arabicName: data.arabicName,
+            baseName: data.baseName || '',
+            brand: data.brand,
+            category: data.category,
+            foodType: data.foodType,
+            availableUnits: data.availableUnits,
+            // Ensure nutritionPer100 is properly structured
+            nutritionPer100: data.nutritionPer100 ? {
+              calories: Number(data.nutritionPer100.calories) || 0,
+              protein: data.nutritionPer100.protein ? Number(data.nutritionPer100.protein) : undefined,
+              carbs: data.nutritionPer100.carbs ? Number(data.nutritionPer100.carbs) : undefined,
+              fat: data.nutritionPer100.fat ? Number(data.nutritionPer100.fat) : undefined,
+              fiber: data.nutritionPer100.fiber ? Number(data.nutritionPer100.fiber) : undefined,
+              sugar: data.nutritionPer100.sugar ? Number(data.nutritionPer100.sugar) : undefined,
+              sodium: data.nutritionPer100.sodium ? Number(data.nutritionPer100.sodium) : undefined,
+              calcium: data.nutritionPer100.calcium ? Number(data.nutritionPer100.calcium) : undefined,
+              potassium: data.nutritionPer100.potassium ? Number(data.nutritionPer100.potassium) : undefined,
+              vitaminB12: data.nutritionPer100.vitaminB12 ? Number(data.nutritionPer100.vitaminB12) : undefined,
+              vitaminA: data.nutritionPer100.vitaminA ? Number(data.nutritionPer100.vitaminA) : undefined,
+              vitaminE: data.nutritionPer100.vitaminE ? Number(data.nutritionPer100.vitaminE) : undefined,
+              vitaminD: data.nutritionPer100.vitaminD ? Number(data.nutritionPer100.vitaminD) : undefined,
+              vitaminC: data.nutritionPer100.vitaminC ? Number(data.nutritionPer100.vitaminC) : undefined,
+              iron: data.nutritionPer100.iron ? Number(data.nutritionPer100.iron) : undefined,
+              magnesium: data.nutritionPer100.magnesium ? Number(data.nutritionPer100.magnesium) : undefined,
+            } : {
+              calories: 0
+            },
+            customConversions: data.customConversions,
+            vegetarian: data.vegetarian,
+            vegan: data.vegan,
+            glutenFree: data.glutenFree,
+            dairyFree: data.dairyFree,
+            mealPlanner: data.mealPlanner,
+            allowDuplication: data.allowDuplication,
+            lowCalorie: data.lowCalorie,
+            calorieAdjustment: data.calorieAdjustment,
+            minPortion: data.minPortion,
+            maxPortion: data.maxPortion,
+            mealTiming: data.mealTiming,
+            createdAt: data.createdAt?.toDate() || new Date(),
+            updatedAt: data.updatedAt?.toDate() || new Date(),
+          } as Food;
+          
+          console.log('Processed food:', food); // Debug log
+          return food;
+        });
         
         // Check if we can load more (less foods returned than limit)
         setCanLoadMore(updatedFoods.length >= (searchTerm && hasSearched ? 50 : foodsLimit));
