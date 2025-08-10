@@ -67,21 +67,11 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
     }
   }, [meal, isOpen]);
 
-  // Fetch foods from Firestore
-  const { data: foods = [] } = useQuery({
+  // Use cached foods data from Foods Manager's real-time listener
+  const { data: foods = [] } = useQuery<Food[]>({
     queryKey: ["/api/foods"],
-    queryFn: async () => {
-      const foodsCollection = collection(db, "foods");
-      const q = firestoreQuery(foodsCollection, orderBy("name"));
-      const snapshot = await getDocs(q);
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-      })) as Food[];
-    },
+    queryFn: () => Promise.resolve([]), // Never called - data comes from Foods Manager's onSnapshot
+    staleTime: Infinity, // Data is always fresh via real-time listener
   });
 
   const form = useForm<InsertMeal>({
@@ -200,10 +190,14 @@ export function MealFormModal({ isOpen, onClose, meal, onSubmit, isLoading }: Me
     setMealFoods(updatedFoods);
   };
 
-  // Get food name by ID
+  // Get food name by ID with better logging
   const getFoodName = (foodId: string) => {
     const food = foods.find(f => f.id === foodId);
-    return food?.name || foodId;
+    if (!food) {
+      console.warn(`Food not found for ID: ${foodId}. Available foods:`, foods.length);
+      return `Unknown Food (${foodId})`;
+    }
+    return food.name || food.id;
   };
 
   // Calculate base nutrition from all foods in the meal
