@@ -119,11 +119,7 @@ export default function Login({ onLogin }: LoginProps) {
               </Button>
             </form>
           </Form>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            <p>Default credentials:</p>
-            <p>Username: <span className="font-mono">admin</span></p>
-            <p>Password: <span className="font-mono">admin</span></p>
-          </div>
+
         </CardContent>
       </Card>
     </div>
