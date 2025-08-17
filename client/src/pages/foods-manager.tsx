@@ -48,17 +48,35 @@ export default function FoodsManager() {
   const [allFoodsLoaded, setAllFoodsLoaded] = useState(false); // Track if all foods are loaded
   const [cacheExpired, setCacheExpired] = useState(false); // Track if cache has expired
 
-  // Check cache expiration (30 days)
+  // Check cache expiration and load from localStorage (30 days)
   useEffect(() => {
     const lastCacheTime = localStorage.getItem("foodsCacheTime");
+    const cachedFoods = localStorage.getItem("cachedFoods");
     const now = Date.now();
     const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
     
-    if (!lastCacheTime || (now - parseInt(lastCacheTime)) > thirtyDaysMs) {
+    // Check if cache is expired
+    const isExpired = !lastCacheTime || (now - parseInt(lastCacheTime)) > thirtyDaysMs;
+    
+    if (isExpired) {
       setCacheExpired(true);
       localStorage.setItem("foodsCacheTime", now.toString());
+      // Clear expired cache
+      localStorage.removeItem("cachedFoods");
+    } else if (cachedFoods) {
+      // Load from cache immediately if not expired
+      try {
+        const parsedFoods = JSON.parse(cachedFoods);
+        queryClient.setQueryData(["/api/foods"], parsedFoods);
+        setAllFoodsLoaded(true);
+        setIsLoading(false);
+        console.log(`Loaded ${parsedFoods.length} foods from localStorage cache`);
+      } catch (error) {
+        console.error("Failed to parse cached foods:", error);
+        localStorage.removeItem("cachedFoods");
+      }
     }
-  }, []);
+  }, [queryClient]);
 
   // Get foods from cache (populated by real-time listener)
   const { data: foods = [] } = useQuery<Food[]>({
@@ -139,6 +157,14 @@ export default function FoodsManager() {
         // All foods are always loaded now
         setAllFoodsLoaded(true);
         
+        // Store in localStorage for future visits
+        try {
+          localStorage.setItem("cachedFoods", JSON.stringify(updatedFoods));
+          console.log(`Cached ${updatedFoods.length} foods to localStorage`);
+        } catch (error) {
+          console.error("Failed to cache foods to localStorage:", error);
+        }
+        
         queryClient.setQueryData(["/api/foods"], updatedFoods);
         setIsLoading(false);
         setError(null);
@@ -150,7 +176,7 @@ export default function FoodsManager() {
     );
 
     return () => unsubscribe();
-  }, [queryClient]);
+  }, [queryClient, cacheExpired]);
 
   // Add food mutation
   const addFoodMutation = useMutation({
