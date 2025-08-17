@@ -44,7 +44,7 @@ export default function FoodsManager() {
   const [pageSize, setPageSize] = useState(10);
   const [sortBy, setSortBy] = useState<keyof Food>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [hasSearched, setHasSearched] = useState(false);
+
   const [allFoodsLoaded, setAllFoodsLoaded] = useState(false); // Track if all foods are loaded
   const [cacheExpired, setCacheExpired] = useState(false); // Track if cache has expired
 
@@ -75,21 +75,8 @@ export default function FoodsManager() {
   useEffect(() => {
     const foodsCollection = collection(db, "foods");
     
-    // Build query - always load ALL foods immediately
-    let q;
-    if (searchTerm && hasSearched) {
-      // Search query with limit for performance
-      q = firestoreQuery(
-        foodsCollection,
-        where("name", ">=", searchTerm),
-        where("name", "<=", searchTerm + '\uf8ff'),
-        orderBy("name"),
-        limit(50)
-      );
-    } else {
-      // Always load ALL foods immediately - no initial limit
-      q = firestoreQuery(foodsCollection, orderBy("name"));
-    }
+    // Always load ALL foods - no Firebase search, only client-side filtering
+    const q = firestoreQuery(foodsCollection, orderBy("name"));
     
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
@@ -149,10 +136,8 @@ export default function FoodsManager() {
           return food;
         });
         
-        // All foods are loaded by default now (unless searching)
-        if (!searchTerm) {
-          setAllFoodsLoaded(true);
-        }
+        // All foods are always loaded now
+        setAllFoodsLoaded(true);
         
         queryClient.setQueryData(["/api/foods"], updatedFoods);
         setIsLoading(false);
@@ -165,7 +150,7 @@ export default function FoodsManager() {
     );
 
     return () => unsubscribe();
-  }, [queryClient, searchTerm, hasSearched, allFoodsLoaded]);
+  }, [queryClient]);
 
   // Add food mutation
   const addFoodMutation = useMutation({
@@ -503,17 +488,9 @@ export default function FoodsManager() {
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search foods... (Firebase search after 3+ characters)"
+                    placeholder="Search foods... (instant search through cached database)"
                     value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      // Trigger Firebase search for 3+ characters
-                      if (e.target.value.length >= 3) {
-                        setHasSearched(true);
-                      } else if (e.target.value.length === 0) {
-                        setHasSearched(false);
-                      }
-                    }}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>
@@ -550,17 +527,10 @@ export default function FoodsManager() {
                 {/* Foods Table */}
 
                 {/* Search Results Info */}
-                {searchTerm && hasSearched && (
+                {searchTerm && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                     <div className="text-sm text-blue-800">
-                      Firebase search results for "{searchTerm}" - showing up to 50 matches
-                    </div>
-                  </div>
-                )}
-                {searchTerm && !hasSearched && searchTerm.length > 0 && searchTerm.length < 3 && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-                    <div className="text-sm text-yellow-800">
-                      Client-side search active for "{searchTerm}" - type 3+ characters for Firebase search
+                      Instant search results for "{searchTerm}" - searching through {foods.length} cached foods
                     </div>
                   </div>
                 )}
