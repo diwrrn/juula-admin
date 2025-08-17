@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Utensils, Plus, Search, Filter, Download, CheckCircle, ChefHat, Dumbbell, Crown } from "lucide-react";
+import { Utensils, Plus, Search, Filter, Download, CheckCircle, ChefHat, Dumbbell, Crown, Database } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { LogoutButton } from "@/components/logout-button";
@@ -45,8 +45,8 @@ export default function FoodsManager() {
   const [sortBy, setSortBy] = useState<keyof Food>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [hasSearched, setHasSearched] = useState(false);
-  const [foodsLimit, setFoodsLimit] = useState(50); // Load 50 foods initially instead of all
-  const [canLoadMore, setCanLoadMore] = useState(true); // Track if more foods can be loaded
+  const [allFoodsLoaded, setAllFoodsLoaded] = useState(false); // Track if all foods are loaded
+  const [loadMoreClicked, setLoadMoreClicked] = useState(false); // Track if user requested all foods
 
   // Get foods from cache (populated by real-time listener)
   const { data: foods = [] } = useQuery<Food[]>({
@@ -62,7 +62,7 @@ export default function FoodsManager() {
   useEffect(() => {
     const foodsCollection = collection(db, "foods");
     
-    // Build query based on search state
+    // Build query based on search state and load preference
     let q;
     if (searchTerm && hasSearched) {
       // Search query with limit
@@ -73,9 +73,12 @@ export default function FoodsManager() {
         orderBy("name"),
         limit(50)
       );
+    } else if (loadMoreClicked || allFoodsLoaded) {
+      // Load ALL foods when requested or already loaded
+      q = firestoreQuery(foodsCollection, orderBy("name"));
     } else {
-      // Default query with limit for initial load
-      q = firestoreQuery(foodsCollection, orderBy("name"), limit(foodsLimit));
+      // Default query with limit for initial load (50 foods)
+      q = firestoreQuery(foodsCollection, orderBy("name"), limit(50));
     }
     
     const unsubscribe = onSnapshot(q, 
@@ -136,8 +139,10 @@ export default function FoodsManager() {
           return food;
         });
         
-        // Check if we can load more (less foods returned than limit)
-        setCanLoadMore(updatedFoods.length >= (searchTerm && hasSearched ? 50 : foodsLimit));
+        // Update load status
+        if (loadMoreClicked && !searchTerm) {
+          setAllFoodsLoaded(true);
+        }
         
         queryClient.setQueryData(["/api/foods"], updatedFoods);
         setIsLoading(false);
@@ -150,7 +155,7 @@ export default function FoodsManager() {
     );
 
     return () => unsubscribe();
-  }, [queryClient, searchTerm, hasSearched, foodsLimit]);
+  }, [queryClient, searchTerm, hasSearched, loadMoreClicked, allFoodsLoaded]);
 
   // Add food mutation
   const addFoodMutation = useMutation({
@@ -405,7 +410,7 @@ export default function FoodsManager() {
           <div className="p-4 border-t border-gray-200 mt-auto">
             <div className="bg-gray-50 rounded-lg p-3">
               <div className="text-sm font-medium text-gray-900">
-                {filteredAndSortedFoods.length} Food Items
+                {filteredAndSortedFoods.length} Food Items {allFoodsLoaded ? '(All)' : '(Limited)'}
               </div>
               <div className="text-xs text-gray-500 mt-1">
                 <div className="flex items-center space-x-1">
@@ -433,6 +438,23 @@ export default function FoodsManager() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
+                  {!allFoodsLoaded && !searchTerm && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setLoadMoreClicked(true)}
+                      disabled={isLoading}
+                      className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                    >
+                      {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+                      Load All Foods ({foods.length} of ~∞)
+                    </Button>
+                  )}
+                  {allFoodsLoaded && (
+                    <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg text-sm">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>All {foods.length} foods loaded</span>
+                    </div>
+                  )}
                   <Button
                     variant="outline"
                     onClick={() => {
