@@ -543,18 +543,6 @@ export default function FoodsManager() {
             ) : (
               <>
                 {/* Foods Table */}
-                {/* Load More Foods Button */}
-                {!searchTerm && canLoadMore && foods.length >= foodsLimit && (
-                  <div className="flex justify-center py-4 mb-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setFoodsLimit(prev => prev + 50)}
-                      disabled={isLoading}
-                    >
-                      Load More Foods ({foods.length} loaded, limited to {foodsLimit})
-                    </Button>
-                  </div>
-                )}
 
                 {/* Search Results Info */}
                 {searchTerm && hasSearched && (
