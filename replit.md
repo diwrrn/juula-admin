@@ -158,6 +158,7 @@ The application includes a comprehensive workout management system defined in `s
 - August 17, 2025: Fixed critical data retrieval bug where Firebase data wasn't properly mapped, causing food names to show as IDs
 - August 17, 2025: Implemented async food loading system - loads 50 foods initially, with "Load All Foods" button for complete database access
 - August 17, 2025: Enhanced meal form to fetch all foods independently, ensuring meals can reference any food in the database
+- August 17, 2025: Updated async loading to load ALL foods immediately with 30-day cache expiration for optimal performance
 
 ## User Preferences
 

@@ -46,13 +46,26 @@ export default function FoodsManager() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [hasSearched, setHasSearched] = useState(false);
   const [allFoodsLoaded, setAllFoodsLoaded] = useState(false); // Track if all foods are loaded
-  const [loadMoreClicked, setLoadMoreClicked] = useState(false); // Track if user requested all foods
+  const [cacheExpired, setCacheExpired] = useState(false); // Track if cache has expired
+
+  // Check cache expiration (30 days)
+  useEffect(() => {
+    const lastCacheTime = localStorage.getItem("foodsCacheTime");
+    const now = Date.now();
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+    
+    if (!lastCacheTime || (now - parseInt(lastCacheTime)) > thirtyDaysMs) {
+      setCacheExpired(true);
+      localStorage.setItem("foodsCacheTime", now.toString());
+    }
+  }, []);
 
   // Get foods from cache (populated by real-time listener)
   const { data: foods = [] } = useQuery<Food[]>({
     queryKey: ["/api/foods"],
     queryFn: () => Promise.resolve([]), // Never called - data comes from onSnapshot
-    staleTime: Infinity, // Data is always fresh via real-time listener
+    staleTime: 30 * 24 * 60 * 60 * 1000, // 30 days cache
+    gcTime: 30 * 24 * 60 * 60 * 1000, // 30 days garbage collection
   });
 
   // Real-time listener with loading state
@@ -62,10 +75,10 @@ export default function FoodsManager() {
   useEffect(() => {
     const foodsCollection = collection(db, "foods");
     
-    // Build query based on search state and load preference
+    // Build query - always load ALL foods immediately
     let q;
     if (searchTerm && hasSearched) {
-      // Search query with limit
+      // Search query with limit for performance
       q = firestoreQuery(
         foodsCollection,
         where("name", ">=", searchTerm),
@@ -73,12 +86,9 @@ export default function FoodsManager() {
         orderBy("name"),
         limit(50)
       );
-    } else if (loadMoreClicked || allFoodsLoaded) {
-      // Load ALL foods when requested or already loaded
-      q = firestoreQuery(foodsCollection, orderBy("name"));
     } else {
-      // Default query with limit for initial load (50 foods)
-      q = firestoreQuery(foodsCollection, orderBy("name"), limit(50));
+      // Always load ALL foods immediately - no initial limit
+      q = firestoreQuery(foodsCollection, orderBy("name"));
     }
     
     const unsubscribe = onSnapshot(q, 
@@ -139,8 +149,8 @@ export default function FoodsManager() {
           return food;
         });
         
-        // Update load status
-        if (loadMoreClicked && !searchTerm) {
+        // All foods are loaded by default now (unless searching)
+        if (!searchTerm) {
           setAllFoodsLoaded(true);
         }
         
@@ -155,7 +165,7 @@ export default function FoodsManager() {
     );
 
     return () => unsubscribe();
-  }, [queryClient, searchTerm, hasSearched, loadMoreClicked, allFoodsLoaded]);
+  }, [queryClient, searchTerm, hasSearched, allFoodsLoaded]);
 
   // Add food mutation
   const addFoodMutation = useMutation({
@@ -438,16 +448,11 @@ export default function FoodsManager() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  {!allFoodsLoaded && !searchTerm && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setLoadMoreClicked(true)}
-                      disabled={isLoading}
-                      className="border-blue-500 text-blue-600 hover:bg-blue-50"
-                    >
-                      {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-                      Load All Foods ({foods.length} of ~∞)
-                    </Button>
+                  {cacheExpired && (
+                    <div className="flex items-center space-x-2 px-3 py-2 bg-orange-50 text-orange-700 rounded-lg text-sm">
+                      <Database className="h-4 w-4" />
+                      <span>Cache refreshed (30-day cycle)</span>
+                    </div>
                   )}
                   {allFoodsLoaded && (
                     <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg text-sm">
