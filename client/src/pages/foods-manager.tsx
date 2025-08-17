@@ -67,7 +67,13 @@ export default function FoodsManager() {
       // Load from cache immediately if not expired
       try {
         const parsedFoods = JSON.parse(cachedFoods);
-        queryClient.setQueryData(["/api/foods"], parsedFoods);
+        // Convert date strings back to Date objects
+        const foodsWithDates = parsedFoods.map((food: any) => ({
+          ...food,
+          createdAt: food.createdAt ? new Date(food.createdAt) : new Date(),
+          updatedAt: food.updatedAt ? new Date(food.updatedAt) : new Date(),
+        }));
+        queryClient.setQueryData(["/api/foods"], foodsWithDates);
         setAllFoodsLoaded(true);
         setIsLoading(false);
         console.log(`Loaded ${parsedFoods.length} foods from localStorage cache`);
