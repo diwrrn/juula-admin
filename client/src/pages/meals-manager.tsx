@@ -36,12 +36,47 @@ export default function MealsManager() {
   const [pageSize, setPageSize] = useState(12);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
+  const [allMealsLoaded, setAllMealsLoaded] = useState(false);
+  const [mealsCacheExpired, setMealsCacheExpired] = useState(false);
+
+  // Check meals cache expiration and load from localStorage (30 days)
+  useEffect(() => {
+    const lastCacheTime = localStorage.getItem("mealsCacheTime");
+    const cachedMeals = localStorage.getItem("cachedMeals");
+    const now = Date.now();
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+    
+    const isExpired = !lastCacheTime || (now - parseInt(lastCacheTime)) > thirtyDaysMs;
+    
+    if (isExpired) {
+      setMealsCacheExpired(true);
+      localStorage.setItem("mealsCacheTime", now.toString());
+      localStorage.removeItem("cachedMeals");
+    } else if (cachedMeals) {
+      try {
+        const parsedMeals = JSON.parse(cachedMeals);
+        const mealsWithDates = parsedMeals.map((meal: any) => ({
+          ...meal,
+          createdAt: meal.createdAt ? new Date(meal.createdAt) : new Date(),
+          updatedAt: meal.updatedAt ? new Date(meal.updatedAt) : new Date(),
+        }));
+        queryClient.setQueryData(["/api/meals"], mealsWithDates);
+        setAllMealsLoaded(true);
+        setMealsLoading(false);
+        console.log(`Loaded ${parsedMeals.length} meals from localStorage cache`);
+      } catch (error) {
+        console.error("Failed to parse cached meals:", error);
+        localStorage.removeItem("cachedMeals");
+      }
+    }
+  }, [queryClient]);
 
   // Get meals from cache (populated by real-time listener)
   const { data: meals = [] } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
     queryFn: () => Promise.resolve([]), // Never called - data comes from onSnapshot
-    staleTime: Infinity, // Data is always fresh via real-time listener
+    staleTime: 30 * 24 * 60 * 60 * 1000, // 30 days cache
+    gcTime: 30 * 24 * 60 * 60 * 1000, // 30 days garbage collection
   });
 
   // Shared foods cache - no duplicate fetching
@@ -57,8 +92,8 @@ export default function MealsManager() {
 
   useEffect(() => {
     const mealsCollection = collection(db, "meals");
-    // Add limit to meals loading (30 meals initially)
-    const q = firestoreQuery(mealsCollection, orderBy("name"), limit(30));
+    // Always load ALL meals - no limit for complete database access
+    const q = firestoreQuery(mealsCollection, orderBy("name"));
     
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
@@ -68,6 +103,17 @@ export default function MealsManager() {
           createdAt: doc.data().createdAt?.toDate() || new Date(),
           updatedAt: doc.data().updatedAt?.toDate() || new Date(),
         })) as Meal[];
+        
+        // All meals are always loaded now
+        setAllMealsLoaded(true);
+        
+        // Store in localStorage for future visits
+        try {
+          localStorage.setItem("cachedMeals", JSON.stringify(updatedMeals));
+          console.log(`Cached ${updatedMeals.length} meals to localStorage`);
+        } catch (error) {
+          console.error("Failed to cache meals to localStorage:", error);
+        }
         
         queryClient.setQueryData(["/api/meals"], updatedMeals);
         setMealsLoading(false);
@@ -80,7 +126,7 @@ export default function MealsManager() {
     );
 
     return () => unsubscribe();
-  }, [queryClient]);
+  }, [queryClient, mealsCacheExpired]);
 
   // Add sample meal mutation
   const addSampleMealMutation = useMutation({
@@ -298,6 +344,18 @@ export default function MealsManager() {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
+            {mealsCacheExpired && (
+              <div className="flex items-center space-x-2 px-3 py-2 bg-orange-50 text-orange-700 rounded-lg text-sm">
+                <ChefHat className="h-4 w-4" />
+                <span>Meals cache refreshed (30-day cycle)</span>
+              </div>
+            )}
+            {allMealsLoaded && (
+              <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg text-sm">
+                <ChefHat className="h-4 w-4" />
+                <span>All {meals.length} meals loaded</span>
+              </div>
+            )}
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-sm text-gray-600">Connected to Firebase</span>
