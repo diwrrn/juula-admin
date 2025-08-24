@@ -21,9 +21,11 @@ interface FoodFormModalProps {
   food?: Food | null;
   onSubmit: (data: InsertFood) => void;
   isLoading: boolean;
+  onSendAsTestSample?: (data: InsertFood) => void;
+  isSendingTestSample?: boolean;
 }
 
-export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: FoodFormModalProps) {
+export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading, onSendAsTestSample, isSendingTestSample }: FoodFormModalProps) {
   const getDefaultValues = () => {
     const defaultFoodType = food?.foodType || "solid";
     const defaultUnits = defaultFoodType === "liquid" 
@@ -128,6 +130,25 @@ export function FoodFormModal({ isOpen, onClose, food, onSubmit, isLoading }: Fo
         <DialogHeader>
           <DialogTitle>{food ? "Edit Food Item" : "Add New Food Item"}</DialogTitle>
         </DialogHeader>
+
+        {/* Send as Test Sample Button - Only shown when editing existing food */}
+        {food && onSendAsTestSample && (
+          <div className="border-b pb-4 mb-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+              onClick={() => {
+                const currentData = form.getValues();
+                onSendAsTestSample(currentData);
+              }}
+              disabled={isSendingTestSample}
+            >
+              {isSendingTestSample && <LoadingSpinner size="sm" className="mr-2" />}
+              Send as Test Sample
+            </Button>
+          </div>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">

@@ -285,6 +285,32 @@ export default function FoodsManager() {
     },
   });
 
+  // Send food as test sample mutation
+  const sendAsTestSampleMutation = useMutation({
+    mutationFn: async (foodData: InsertFood) => {
+      const foodsFreeCollection = collection(db, "foodsFree");
+      const now = new Date();
+      await addDoc(foodsFreeCollection, {
+        ...foodData,
+        createdAt: now,
+        updatedAt: now,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Food sent as test sample to foodsFree collection",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to send test sample: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Filter and sort foods
   const filteredAndSortedFoods = useMemo(() => {
     let filtered = foods.filter(food => {
@@ -640,6 +666,8 @@ export default function FoodsManager() {
           }
         }}
         isLoading={addFoodMutation.isPending || updateFoodMutation.isPending}
+        onSendAsTestSample={(data) => sendAsTestSampleMutation.mutate(data)}
+        isSendingTestSample={sendAsTestSampleMutation.isPending}
       />
 
       <DeleteConfirmationModal
