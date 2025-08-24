@@ -288,10 +288,27 @@ export default function FoodsManager() {
   // Send food as test sample mutation
   const sendAsTestSampleMutation = useMutation({
     mutationFn: async (foodData: InsertFood) => {
+      // Clean all undefined values for Firebase compatibility
+      const cleanCustomConversions = Object.fromEntries(
+        Object.entries(foodData.customConversions || {}).filter(([_, value]) => value !== undefined && value !== null)
+      );
+      
+      const cleanData = {
+        ...foodData,
+        customConversions: cleanCustomConversions,
+        // Remove undefined portion values for Firebase compatibility
+        minPortion: foodData.minPortion !== undefined ? foodData.minPortion : undefined,
+        maxPortion: foodData.maxPortion !== undefined ? foodData.maxPortion : undefined,
+      };
+      
+      // Remove undefined fields entirely
+      if (cleanData.minPortion === undefined) delete cleanData.minPortion;
+      if (cleanData.maxPortion === undefined) delete cleanData.maxPortion;
+      
       const foodsFreeCollection = collection(db, "foodsFree");
       const now = new Date();
       await addDoc(foodsFreeCollection, {
-        ...foodData,
+        ...cleanData,
         createdAt: now,
         updatedAt: now,
       });
