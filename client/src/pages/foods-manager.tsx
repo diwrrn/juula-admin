@@ -520,34 +520,6 @@ export default function FoodsManager() {
                       <span>All {foods.length} foods loaded</span>
                     </div>
                   )}
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      // Add a sample rice item to demonstrate multiple servings
-                      addFoodMutation.mutate({
-                        name: "White Rice",
-                        baseName: "rice",
-                        kurdishName: "برنج سپی",
-                        arabicName: "أرز أبيض",
-                        brand: "Demo",
-                        category: "grains",
-                        foodType: "solid",
-                        availableUnits: ["cup", "g", "plate"],
-                        nutritionPer100: {
-                          calories: 205,
-                          protein: 4.3,
-                          carbs: 45,
-                          fat: 0.4,
-                          fiber: 0.6,
-                        },
-
-                      });
-                    }}
-                    disabled={addFoodMutation.isPending}
-                  >
-                    {addFoodMutation.isPending ? <LoadingSpinner size="sm" className="mr-2" /> : null}
-                    Add Sample Rice
-                  </Button>
                   <Button 
                     onClick={() => setIsAddModalOpen(true)}
                     className="bg-primary hover:bg-blue-700"
