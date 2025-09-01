@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foods Database Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1976D2',
+                        secondary: '#424242',
+                        success: '#4CAF50',
+                        warning: '#FF9800',
+                        error: '#F44336'
+                    },
+                    fontFamily: {
+                        'roboto': ['Roboto', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-roboto">
+    <!-- @COMPONENT: AppHeader -->
+    <header class="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
+        <div class="px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-utensils text-primary text-2xl"></i>
+                <h1 class="text-xl font-medium text-gray-900">Foods Database Manager</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                    <span class="text-sm text-gray-600" data-bind="connectionStatus">Connected to Firebase</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=32&h=32" alt="User avatar" class="w-8 h-8 rounded-full" data-mock="true">
+                    <span class="text-sm font-medium text-gray-700" data-bind="user.name" data-mock="true">Admin User</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: AppHeader -->
+
+    <div class="pt-20 flex h-screen">
+        <!-- @COMPONENT: Sidebar -->
+        <aside class="w-64 bg-white shadow-sm border-r border-gray-200 flex-shrink-0">
+            <nav class="p-4 space-y-2">
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 bg-blue-50 text-primary rounded-lg font-medium">
+                    <i class="fas fa-database w-5"></i>
+                    <span>Foods Database</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg">
+                    <i class="fas fa-chart-bar w-5"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg">
+                    <i class="fas fa-cog w-5"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-gray-200 mt-auto">
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <div class="text-sm font-medium text-gray-900" data-bind="database.totalRecords" data-mock="true">1,247 Food Items</div>
+                    <div class="text-xs text-gray-500 mt-1">Last updated: <span data-bind="database.lastUpdated" data-mock="true">2 minutes ago</span></div>
+                </div>
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent -->
+        <main class="flex-1 overflow-hidden">
+            <div class="h-full flex flex-col">
+                <!-- Toolbar -->
+                <div class="bg-white border-b border-gray-200 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <h2 class="text-lg font-medium text-gray-900">Foods Database</h2>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium" data-bind="database.status" data-mock="true">
+                                    <i class="fas fa-check-circle mr-1"></i>Synced
+                                </span>
+                            </div>
+                        </div>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors" data-event="click:openAddModal">
+                            <i class="fas fa-plus mr-2"></i>Add New Food
+                        </button>
+                    </div>
+
+                    <!-- Search and Filters -->
+                    <div class="mt-4 flex items-center space-x-4">
+                        <div class="flex-1 relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" placeholder="Search foods by name, category, or nutrition info..." 
+                                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   data-event="input:handleSearch" data-mock="true">
+                        </div>
+                        <select class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-event="change:filterByCategory" data-mock="true">
+                            <option value="">All Categories</option>
+                            <option value="fruits" data-mock="true">Fruits</option>
+                            <option value="vegetables" data-mock="true">Vegetables</option>
+                            <option value="grains" data-mock="true">Grains</option>
+                            <option value="proteins" data-mock="true">Proteins</option>
+                            <option value="dairy" data-mock="true">Dairy</option>
+                        </select>
+                        <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" data-event="click:openFilterModal">
+                            <i class="fas fa-filter mr-2"></i>More Filters
+                        </button>
+                        <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" data-event="click:exportData">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="flex-1 overflow-auto bg-white">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" class="rounded border-gray-300" data-event="change:selectAll">
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-event="click:sortBy:name">
+                                    Food Name <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-event="click:sortBy:category">
+                                    Category <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-event="click:sortBy:calories">
+                                    Calories <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Nutrition
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-event="click:sortBy:lastModified">
+                                    Last Modified <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- @MAP: foods.map(food => ( -->
+                            <tr class="hover:bg-gray-50" data-mock="true">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded border-gray-300" data-bind="food.selected">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <!-- Placeholder for food image -->
+                                        <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=40&h=40" alt="Food item" class="w-10 h-10 rounded-lg object-cover mr-3" data-bind="food.image" data-mock="true">
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900" data-bind="food.name" data-mock="true">Apple</div>
+                                            <div class="text-sm text-gray-500" data-bind="food.brand" data-mock="true">Fresh Produce</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800" data-bind="food.category" data-mock="true">
+                                        Fruits
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="food.calories" data-mock="true">
+                                    52 kcal
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div class="space-y-1" data-mock="true">
+                                        <div>Protein: <span data-bind="food.protein" class="font-medium">0.3g</span></div>
+                                        <div>Carbs: <span data-bind="food.carbs" class="font-medium">14g</span></div>
+                                        <div>Fat: <span data-bind="food.fat" class="font-medium">0.2g</span></div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-bind="food.lastModified" data-mock="true">
+                                    Jan 15, 2024
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="text-primary hover:text-blue-700" data-event="click:editFood" data-bind="food.id">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-gray-400 hover:text-gray-600" data-event="click:duplicateFood" data-bind="food.id">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button class="text-red-400 hover:text-red-600" data-event="click:deleteFood" data-bind="food.id">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-gray-50" data-mock="true">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded border-gray-300">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <!-- Fresh salmon fillet with herbs and lemon -->
+                                        <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=40&h=40" alt="Salmon fillet" class="w-10 h-10 rounded-lg object-cover mr-3" data-mock="true">
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900" data-mock="true">Salmon Fillet</div>
+                                            <div class="text-sm text-gray-500" data-mock="true">Premium Seafood</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800" data-mock="true">
+                                        Proteins
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-mock="true">
+                                    208 kcal
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div class="space-y-1" data-mock="true">
+                                        <div>Protein: <span class="font-medium">25.4g</span></div>
+                                        <div>Carbs: <span class="font-medium">0g</span></div>
+                                        <div>Fat: <span class="font-medium">12.4g</span></div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-mock="true">
+                                    Jan 14, 2024
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="text-primary hover:text-blue-700">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-gray-400 hover:text-gray-600">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button class="text-red-400 hover:text-red-600">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="hover:bg-gray-50" data-mock="true">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded border-gray-300">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <!-- Bowl of brown rice with chopsticks -->
+                                        <img src="https://images.unsplash.com/photo-1586201375761-83865001e31c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=40&h=40" alt="Brown rice" class="w-10 h-10 rounded-lg object-cover mr-3" data-mock="true">
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900" data-mock="true">Brown Rice</div>
+                                            <div class="text-sm text-gray-500" data-mock="true">Organic Grains</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800" data-mock="true">
+                                        Grains
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-mock="true">
+                                    111 kcal
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div class="space-y-1" data-mock="true">
+                                        <div>Protein: <span class="font-medium">2.6g</span></div>
+                                        <div>Carbs: <span class="font-medium">23g</span></div>
+                                        <div>Fat: <span class="font-medium">0.9g</span></div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-mock="true">
+                                    Jan 13, 2024
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="text-primary hover:text-blue-700">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-gray-400 hover:text-gray-600">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button class="text-red-400 hover:text-red-600">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- @END_MAP )) -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="bg-white px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-700">
+                            Showing <span class="font-medium" data-bind="pagination.start" data-mock="true">1</span> to <span class="font-medium" data-bind="pagination.end" data-mock="true">10</span> of <span class="font-medium" data-bind="pagination.total" data-mock="true">1,247</span> results
+                        </span>
+                        <select class="ml-2 border border-gray-300 rounded px-2 py-1 text-sm" data-event="change:changePageSize" data-mock="true">
+                            <option value="10">10 per page</option>
+                            <option value="25">25 per page</option>
+                            <option value="50">50 per page</option>
+                            <option value="100">100 per page</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50" disabled data-event="click:previousPage">
+                            <i class="fas fa-chevron-left mr-1"></i>Previous
+                        </button>
+                        <div class="flex items-center space-x-1">
+                            <button class="px-3 py-1 bg-primary text-white rounded text-sm" data-mock="true">1</button>
+                            <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50" data-mock="true">2</button>
+                            <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50" data-mock="true">3</button>
+                            <span class="px-2 text-gray-500">...</span>
+                            <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50" data-bind="pagination.lastPage" data-mock="true">125</button>
+                        </div>
+                        <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50" data-event="click:nextPage">
+                            Next<i class="fas fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+
+    <!-- @COMPONENT: AddEditModal -->
+    <div id="addEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" data-implementation="Show/hide based on modal state">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg font-medium text-gray-900" data-bind="modal.title" data-mock="true">Add New Food Item</h3>
+                <button class="text-gray-400 hover:text-gray-600" data-event="click:closeModal">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form class="p-6 space-y-6" data-event="submit:handleSubmit">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Basic Information -->
+                    <div class="space-y-4">
+                        <h4 class="font-medium text-gray-900">Basic Information</h4>
+                        
+                        <div>
+                            <label for="foodName" class="block text-sm font-medium text-gray-700 mb-1">Food Name *</label>
+                            <input type="text" id="foodName" name="name" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   data-bind="form.name" data-mock="true">
+                        </div>
+
+                        <div>
+                            <label for="brand" class="block text-sm font-medium text-gray-700 mb-1">Brand/Manufacturer</label>
+                            <input type="text" id="brand" name="brand"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   data-bind="form.brand" data-mock="true">
+                        </div>
+
+                        <div>
+                            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                            <select id="category" name="category" required 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    data-bind="form.category" data-mock="true">
+                                <option value="">Select category</option>
+                                <option value="fruits">Fruits</option>
+                                <option value="vegetables">Vegetables</option>
+                                <option value="grains">Grains</option>
+                                <option value="proteins">Proteins</option>
+                                <option value="dairy">Dairy</option>
+                                <option value="beverages">Beverages</option>
+                                <option value="snacks">Snacks</option>
+                                <option value="condiments">Condiments</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="servingSize" class="block text-sm font-medium text-gray-700 mb-1">Serving Size</label>
+                            <div class="flex space-x-2">
+                                <input type="number" id="servingSize" name="servingSize" step="0.1"
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                       data-bind="form.servingSize" data-mock="true">
+                                <select name="servingUnit" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true">
+                                    <option value="g">grams</option>
+                                    <option value="ml">ml</option>
+                                    <option value="cup">cup</option>
+                                    <option value="piece">piece</option>
+                                    <option value="slice">slice</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nutrition Information -->
+                    <div class="space-y-4">
+                        <h4 class="font-medium text-gray-900">Nutrition Information (per serving)</h4>
+                        
+                        <div>
+                            <label for="calories" class="block text-sm font-medium text-gray-700 mb-1">Calories *</label>
+                            <input type="number" id="calories" name="calories" required step="0.1"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   data-bind="form.calories" data-mock="true">
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label for="protein" class="block text-sm font-medium text-gray-700 mb-1">Protein (g)</label>
+                                <input type="number" id="protein" name="protein" step="0.1"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                       data-bind="form.protein" data-mock="true">
+                            </div>
+                            <div>
+                                <label for="carbs" class="block text-sm font-medium text-gray-700 mb-1">Carbs (g)</label>
+                                <input type="number" id="carbs" name="carbs" step="0.1"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                       data-bind="form.carbs" data-mock="true">
+                            </div>
+                            <div>
+                                <label for="fat" class="block text-sm font-medium text-gray-700 mb-1">Fat (g)</label>
+                                <input type="number" id="fat" name="fat" step="0.1"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                       data-bind="form.fat" data-mock="true">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="fiber" class="block text-sm font-medium text-gray-700 mb-1">Fiber (g)</label>
+                                <input type="number" id="fiber" name="fiber" step="0.1"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                       data-bind="form.fiber" data-mock="true">
+                            </div>
+                            <div>
+                                <label for="sugar" class="block text-sm font-medium text-gray-700 mb-1">Sugar (g)</label>
+                                <input type="number" id="sugar" name="sugar" step="0.1"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                       data-bind="form.sugar" data-mock="true">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="sodium" class="block text-sm font-medium text-gray-700 mb-1">Sodium (mg)</label>
+                            <input type="number" id="sodium" name="sodium" step="0.1"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   data-bind="form.sodium" data-mock="true">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="space-y-4">
+                    <h4 class="font-medium text-gray-900">Additional Information</h4>
+                    
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="description" name="description" rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                  data-bind="form.description" data-mock="true"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="barcode" class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                            <input type="text" id="barcode" name="barcode"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   data-bind="form.barcode" data-mock="true">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Dietary Tags</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="vegetarian" class="rounded border-gray-300 mr-2" data-bind="form.vegetarian" data-mock="true">
+                                    <span class="text-sm">Vegetarian</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="vegan" class="rounded border-gray-300 mr-2" data-bind="form.vegan" data-mock="true">
+                                    <span class="text-sm">Vegan</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Allergens</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="glutenFree" class="rounded border-gray-300 mr-2" data-bind="form.glutenFree" data-mock="true">
+                                    <span class="text-sm">Gluten-Free</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="dairyFree" class="rounded border-gray-300 mr-2" data-bind="form.dairyFree" data-mock="true">
+                                    <span class="text-sm">Dairy-Free</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <button type="button" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors" data-event="click:closeModal">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <span data-bind="modal.submitText" data-mock="true">Add Food Item</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AddEditModal -->
+
+    <!-- @COMPONENT: DeleteConfirmationModal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" data-implementation="Show/hide based on modal state">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Delete Food Item</h3>
+                <p class="text-sm text-gray-500 text-center mb-6">
+                    Are you sure you want to delete "<span data-bind="deleteModal.foodName" class="font-medium" data-mock="true">Apple</span>"? This action cannot be undone.
+                </p>
+                <div class="flex items-center justify-center space-x-3">
+                    <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors" data-event="click:cancelDelete">
+                        Cancel
+                    </button>
+                    <button class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors" data-event="click:confirmDelete">
+                        Delete Item
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: DeleteConfirmationModal -->
+
+    <!-- @COMPONENT: BulkActionsBar -->
+    <div id="bulkActionsBar" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border border-gray-200 px-6 py-3 hidden" data-implementation="Show when items are selected">
+        <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-700">
+                <span data-bind="bulkActions.selectedCount" class="font-medium" data-mock="true">3</span> items selected
+            </span>
+            <div class="flex items-center space-x-2">
+                <button class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors" data-event="click:bulkEdit">
+                    <i class="fas fa-edit mr-1"></i>Bulk Edit
+                </button>
+                <button class="px-3 py-1 text-sm bg-blue-100 text-primary rounded hover:bg-blue-200 transition-colors" data-event="click:bulkExport">
+                    <i class="fas fa-download mr-1"></i>Export
+                </button>
+                <button class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors" data-event="click:bulkDelete">
+                    <i class="fas fa-trash mr-1"></i>Delete
+                </button>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600" data-event="click:clearSelection">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: BulkActionsBar -->
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-40 hidden" data-implementation="Show during API operations">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <div class="text-gray-600 font-medium" data-bind="loading.message" data-mock="true">Syncing with Firebase...</div>
+        </div>
+    </div>
+
+    <script>
+        // TODO: Initialize Firebase connection
+        // TODO: Implement CRUD operations for foods collection
+        // TODO: Implement real-time synchronization
+        // TODO: Add form validation and error handling
+        // TODO: Implement search and filtering functionality
+        // TODO: Add bulk operations
+        // TODO: Implement export functionality
+        
+        (function() {
+            // Mock interaction handlers for demonstration
+            // In real implementation, these would interact with Firebase
+            
+            // Modal management
+            function showModal(modalId) {
+                document.getElementById(modalId).classList.remove('hidden');
+            }
+            
+            function hideModal(modalId) {
+                document.getElementById(modalId).classList.add('hidden');
+            }
+            
+            // Demo interactions
+            document.addEventListener('click', function(e) {
+                if (e.target.matches('[data-event*="openAddModal"]')) {
+                    showModal('addEditModal');
+                }
+                
+                if (e.target.matches('[data-event*="closeModal"]')) {
+                    hideModal('addEditModal');
+                    hideModal('deleteModal');
+                }
+                
+                if (e.target.matches('[data-event*="deleteFood"]')) {
+                    showModal('deleteModal');
+                }
+            });
+            
+            // Simulate loading states
+            function showLoading(message = 'Loading...') {
+                const overlay = document.getElementById('loadingOverlay');
+                const messageEl = overlay.querySelector('[data-bind="loading.message"]');
+                messageEl.textContent = message;
+                overlay.classList.remove('hidden');
+            }
+            
+            function hideLoading() {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+            
+            // Demo loading simulation
+            document.addEventListener('DOMContentLoaded', function() {
+                showLoading('Connecting to Firebase...');
+                setTimeout(() => {
+                    hideLoading();
+                }, 2000);
+            });
+        })();
+    </script>
+</body>
+</html>
