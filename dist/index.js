@@ -361,7 +361,7 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
-  const port = 5e3;
+  const port = process.env.PORT || 5e3;
   server.listen({
     port,
     host: "0.0.0.0",
