@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Git post-receive hook for automatic deployment
+# Place this in your cPanel hosting's .git/hooks/ directory
+
+DEPLOY_PATH="/home/username/public_html"  # Change this to your actual path
+BRANCH="main"  # Change this to your default branch
+
+echo "🚀 Git hook triggered - starting deployment..."
+
+# Check if we're on the right branch
+while read oldrev newrev refname; do
+    branch=$(git rev-parse --symbolic --abbrev-ref $refname)
+    if [ "$branch" = "$BRANCH" ]; then
+        echo "✅ Deploying branch: $branch"
+        
+        # Change to deployment directory
+        cd $DEPLOY_PATH
+        
+        # Pull latest changes
+        git pull origin $BRANCH
+        
+        # Run deployment script
+        chmod +x deploy.sh
+        ./deploy.sh
+        
+        echo "✅ Deployment completed successfully!"
+    else
+        echo "⏭️ Skipping deployment for branch: $branch"
+    fi
+done
